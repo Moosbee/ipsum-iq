@@ -52,7 +52,7 @@ String genJsonResp(bool state){
 }
 
 //void notifyClients() {
-//  ws.textAll(String(ledState));
+  ws.textAll(genJsonResp(ledState));
 //}
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
