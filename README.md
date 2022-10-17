@@ -1,26 +1,31 @@
 
-# ipsum-iq
+# ipsum-iq - Entwicklung eines ferngesteuertem lichtschalters mit weboberfläche
 
-## Entwicklung eines ferngesteuertem lichtschalters mit weboberfläche
+## Standart-WLAN
 
-## REST API ESP <== SERVER
+SSID:Lorem-IQ
+Password:Lorem-Tech!
+
+## API's
+
+### REST API SERVER ==> ESP
 
 - GET /state
   RES {
   state: 'on'|'off',
   }
 
-## REST API ESP ==> SERVER
+### REST API ESP ==> SERVER
 
 1. Test
 1. Test
 
-## REST API SERVER <== CLIENT
+### REST API CLIENT ==> SERVER
 
 1. Test
 1. Test
 
-## REST API SERVER ==> CLIENT
+### REST API SERVER ==> CLIENT
 
 1. Test
 1. Test
