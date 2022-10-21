@@ -1,4 +1,5 @@
 //https://github.com/me-no-dev/ESPAsyncWebServer/
+//https://randomnerdtutorials.com/esp8266-nodemcu-websocket-server-arduino/
 
 // Import required libraries
 #include <ESP8266WiFi.h>
@@ -20,8 +21,8 @@
 #ifndef STASSID
 //#define STASSID "htlwlan"
 //#define STAPSK  "htl12345"
-#define STASSID "Riedberrypi"
-#define STAPSK  "This Password is dumm!"
+#define STASSID "Lorem-IQ"
+#define STAPSK  "Lorem-Tech!"
 #endif
 
 // Replace with your network credentials
@@ -33,7 +34,7 @@ const int ledPin = LED_BUILTIN;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+//AsyncWebSocket ws("/ws");
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -52,7 +53,7 @@ String genJsonResp(bool state){
 }
 
 //void notifyClients() {
-//  ws.textAll(String(ledState));
+  //ws.textAll(genJsonResp(ledState));
 //}
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
@@ -85,10 +86,10 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-void initWebSocket() {
-  ws.onEvent(onEvent);
-  server.addHandler(&ws);
-}
+//void initWebSocket() {
+//  ws.onEvent(onEvent);
+//  server.addHandler(&ws);
+//}
 
 String processor(const String& var){
   debugln(var);
@@ -114,8 +115,6 @@ void setup(){
   // Print ESP Local IP Address
   debugln(WiFi.localIP());
   digitalWrite(ledPin, LOW);
-
-  initWebSocket();
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -151,5 +150,5 @@ void setup(){
 }
 
 void loop() {
-  ws.cleanupClients();
+  //ws.cleanupClients();
 }
