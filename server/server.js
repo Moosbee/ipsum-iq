@@ -1,13 +1,16 @@
 var express = require("express");
+var bodyParser = require("body-parser");
 var app = express();
+var urlencodedParser = bodyParser.urlencoded({ extended: false});
 
 const port = 8000;
 
 app.use(express.json());
 
-// app.get("/", function (req, res) {
-//   res.sendFile("../frontend/index.html");
-// });
+app.post('/login', urlencodedParser, function(req, res) {
+  console.log(req.body);
+  
+})
 
 app.use(express.static("../frontend"));
 
