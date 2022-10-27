@@ -24,8 +24,10 @@ pool.query('SELECT username, password FROM user', (err, result, fields)=>{
     }
 
     return output.forEach(callback);
-
+    module.exports = {output};
 })
+
+
 
 
 
