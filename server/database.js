@@ -10,15 +10,22 @@ const pool = createPool({
     connectionLimit: 10
 })
 
-function DB_Output() {
 
-    pool.query('SELECT * FROM user', (err, result, fields)=>{
 
-        if(err) {
-            return console.log(err);
-        }
-        var output = result
-        return output;
-    })
+pool.query('SELECT username, password FROM user', (err, result, fields)=>{
 
-}
+    if(err) {
+        return console.log(err);
+    }
+    var output = result;
+    
+    function callback(item, index, arr) {
+        console.log(item);
+    }
+
+    return output.forEach(callback);
+
+})
+
+
+
