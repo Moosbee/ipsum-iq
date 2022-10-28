@@ -17,14 +17,21 @@ pool.query('SELECT username, password FROM user', (err, result, fields)=>{
     if(err) {
         return console.log(err);
     }
-    var output = result;
+    //Ergebnise der Abfrage in Variablen speichern
+    var admin_user = result[0].username;
+    var admin_pwd = result[0].password;
+    var user = result[1].username;
+    var pwd = result[1].password;
     
-    function callback(item, index, arr) {
-        console.log(item);
-    }
-
-    return output.forEach(callback);
-    module.exports = {output};
+    console.log(admin_user);
+    
+    //Variablen exportieren
+    module.exports = {
+        admin_user,
+        admin_pwd,
+        user,
+        pwd
+    };
 })
 
 

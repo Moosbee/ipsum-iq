@@ -3,12 +3,18 @@ var bodyParser = require("body-parser");
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false});
 var database = require("./database");
-const db_output = database.output;
 const port = 8000;
 
 
+const admin_username = database.admin_user;
+const admin_password = database.admin_pwd;
+const username = database.user;
+const password = database.pwd;
 
-console.log(db_output);
+
+console.log(admin_username);
+console.log(admin_password);
+
 
 app.use(express.json());
 
@@ -16,8 +22,10 @@ app.use(express.json());
 //Abfangen der POST Anfrage
 app.post('/login', urlencodedParser, function(req, res) {
 
-  var postrequest = req.body;
-  console.log(postrequest);
+  var user_post = req.body.username;
+  var pwd_post = req.body.password;
+  console.log("DAS IST DER USERNAME WELCHER EINGEGEBEN WURDE: " +user_post);
+  console.log("DAS IST DAS PASSWORT WELCHES EINGEGEBEN WURDE: " + pwd_post);
 })
 
 app.use(express.static("../frontend"));
