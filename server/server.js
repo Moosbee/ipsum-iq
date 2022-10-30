@@ -2,18 +2,13 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false});
-var database = require("./database");
+const database = require("./database");
 const port = 8000;
 
-
-const admin_username = database.admin_user;
-const admin_password = database.admin_pwd;
-const username = database.user;
-const password = database.pwd;
+const test = database.admin_user;
 
 
-console.log(admin_username);
-console.log(admin_password);
+console.log(test);
 
 
 app.use(express.json());
