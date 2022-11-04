@@ -3,13 +3,8 @@ var bodyParser = require("body-parser");
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false});
 const database = require("./database");
+const { json } = require("body-parser");
 const port = 8000;
-
-const test = database.admin_user;
-
-
-console.log(test);
-
 
 app.use(express.json());
 

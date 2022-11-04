@@ -10,10 +10,11 @@ const pool = createPool({
     connectionLimit: 10
 })
 
-var admin_user = "test";
-var admin_pwd;
-var user;
-var pwd; 
+
+function database_output(results) {
+    var test = this.results;
+    console.log(test);
+}
 
 pool.query('SELECT username, password FROM user', (err, result, fields)=>{
 
@@ -21,22 +22,21 @@ pool.query('SELECT username, password FROM user', (err, result, fields)=>{
         return console.log(err);
     }
     //Ergebnise der Abfrage in Variablen speichern
-    admin_user = result[0].username;
-    admin_pwd = result[0].password;
-    user = result[1].username;
-    pwd = result[1].password;
-    
 
+
+
+   
+    return result;
     
    
 })
 
+
+
+
 //Variablen exportieren
 module.exports = {
-    admin_user,
-    admin_pwd,
-    user,
-    pwd
+    database_output
 };
 
 
