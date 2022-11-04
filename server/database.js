@@ -25,9 +25,6 @@ pool.query('SELECT username, password FROM user', (err, result, fields)=>{
 });
 
 
-
-
-//Variablen exportieren
 module.exports = {
     database_output
 };
