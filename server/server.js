@@ -24,6 +24,4 @@ app.listen(port, function () {
   console.log(`Example app listening on port ${port}!`);
 });
 
-test = database.database_output();
 
-console.log(test + " geht");
