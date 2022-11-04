@@ -11,25 +11,25 @@ const pool = createPool({
 })
 
 
-function database_output(results) {
-    var test = this.results;
-    console.log(test);
+async function database_output(username, passwd) {
+    
+    console.log(username);
+    console.log(passwd);
 }
 
-pool.query('SELECT username, password FROM user', (err, result, fields)=>{
+database_output().then(pool.query('SELECT username, password FROM user', (err, result, fields)=>{
 
     if(err) {
         return console.log(err);
     }
     //Ergebnise der Abfrage in Variablen speichern
 
+    var plsgeh = result;
+    console.log(plsgeh);
 
-
+    return plsgeh;
    
-    return result;
-    
-   
-})
+}));
 
 
 
