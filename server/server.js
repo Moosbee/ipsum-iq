@@ -59,15 +59,17 @@ app.post('/login', async (req, res) => {
 
     let an = await (await connection).query("SELECT username, password FROM user");
 
-    console.log(an);
+    let isUser = req.body.name === an[0][0].username;
+    let isPassword = await bcrypt.compare(req.body.password, an[0][0].password);
 
     if (an == null) {
         return res.status(400).send("Cannot find user");
     }
     try {
-        if (await bcrypt.compare(req.body.password, an[0][0].password)) {
+        if (isUser && isPassword) {
             res.send("Success");
         }
+        
         else {
             res.send("Wrong User or Password");
         }
