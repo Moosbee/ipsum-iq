@@ -3,18 +3,7 @@ const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const database = require('./database');
-
 const mysql = require('mysql2/promise');
-
-const connInfo={
-    host: "127.0.0.1",
-    user: "root",
-    password: "",
-    database: "ipsum_iq",
-    connectionLimit: 10
-}
-
-const connection = mysql.createConnection(connInfo);
 
 
 
@@ -76,10 +65,6 @@ app.post('/login', async (req, res) => {
     } catch {
         res.status(500).send("Fatal error :(");
     }
-
-
-
-
 });
 
 app.listen(3000);
