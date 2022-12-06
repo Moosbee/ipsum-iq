@@ -38,6 +38,14 @@ const int ledPin = LED_BUILTIN;
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
 
+
+bool btnState = false;
+const int btnPin = 2;
+
+bool resetState = false;
+const int resetPin = 2;
+int resetTimer = 0;
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 WebSocketsClient webSocket;
