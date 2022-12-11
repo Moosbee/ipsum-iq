@@ -1,8 +1,13 @@
 
-
+// https://tttapa.github.io/ESP8266/Chap01%20-%20ESP8266.html
 // https://github.com/me-no-dev/ESPAsyncWebServer/
 // https://randomnerdtutorials.com/esp8266-nodemcu-websocket-server-arduino/
 // https://github.com/Links2004/arduinoWebSockets
+// https://forum.arduino.cc/t/read-write-esp8266-eeprom-for-saving-wifi-ssid-pw-ip-adr/443719/5
+// https://pijaeducation.com/eeprom-in-arduino-and-esp/
+// https://www.circuitschools.com/change-wifi-credentials-of-esp8266-without-uploading-code-again/
+// https://arduino.stackexchange.com/questions/54525/connecting-an-esp8266-to-wifi-without-hardcoding-the-credentials
+// https://github.com/tzapu/WiFiManager
 
 // Import required libraries
 
@@ -11,6 +16,7 @@
 #include <ESPAsyncWebServer.h>
 
 #include <WebSocketsClient.h>
+#include <EEPROM.h>
 
 #define DEBUG 1
 // debug/debugln for debugging
@@ -30,13 +36,24 @@
 #endif
 
 // Replace with your network credentials
-const char *ssid = STASSID;
-const char *password = STAPSK;
+ char *ssid = STASSID;
+ char *password = STAPSK;
 
 bool ledState = false;
 const int ledPin = LED_BUILTIN;
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
+
+
+bool btnState = false;
+const int btnPin = 2;
+
+bool resetState = false;
+const int resetPin = 2;
+int resetTimer = 0;
+
+byte serverIp[4] = {192,168,2,10};
+int serverPort = 8080;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -182,7 +199,7 @@ void setup()
     request->send_P(200, "text/html", jsonResp, processor); });
 
   // server address, port and URL
-  webSocket.begin("192.168.2.10", 8080, "/");
+  webSocket.begin(serverIp, serverPort, "/");
 
   // event handler
   webSocket.onEvent(webSocketEvent);
@@ -192,6 +209,37 @@ void setup()
 
   // Start server
   server.begin();
+}
+
+/** Load WLAN credentials from EEPROM */
+void loadCredentials() {
+  EEPROM.begin(512);
+  EEPROM.get(4, ssid);
+  EEPROM.get(4+sizeof(ssid), password);
+  char ok[2+1];
+  EEPROM.get(4+sizeof(ssid)+sizeof(password), ok);
+  EEPROM.end();
+  if (String(ok) != String("OK")) {
+      ssid = STASSID;
+      password = STAPSK;
+  }
+  debugln("Recovered credentials:");
+  debugln(ssid);
+}
+
+/** Store WLAN credentials to EEPROM */
+void saveCredentials() {
+  EEPROM.begin(512);
+  EEPROM.put(4, ssid);
+  EEPROM.put(4+sizeof(ssid), password);
+  char ok[2+1] = "OK";
+  EEPROM.put(4+sizeof(ssid)+sizeof(password), ok);
+  EEPROM.commit();
+  EEPROM.end();
+}
+
+void writeServer(byte Ip[4],int port){
+  
 }
 
 void loop()
