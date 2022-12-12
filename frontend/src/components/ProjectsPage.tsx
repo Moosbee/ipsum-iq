@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
-function ProjectsPage(props:any) {
+function ProjectsPage(props: any) {
   return <h1>Projects</h1>;
 }
 
-export default ProjectsPage;
+export { ProjectsPage };
