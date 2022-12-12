@@ -1,8 +1,8 @@
 import React from "react";
 
-function Pagetest(props: any) {
+function Login(props: any) {
   return (
-    <body className=" bg-gradient-to-br from-purple-600 to-blue-500">
+    <div className=" bg-gradient-to-br from-purple-600 to-blue-500">
       <div className="grid place-items-center h-screen">
         <div className="Login w-80 h-80 shadow rounded bg-white">
           <img className="scale-75 pb-8" src="logotest.png" alt="" />
@@ -41,8 +41,8 @@ function Pagetest(props: any) {
           </form>
         </div>
       </div>
-    </body>
+    </div>
   );
 }
 
-export { Pagetest };
+export { Login };
