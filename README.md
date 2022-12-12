@@ -6,7 +6,10 @@
 ## Standart-WLAN
 
 SSID:Lorem-IQ
+
 Password:Lorem-Tech!
+
+Default-Server-IP:192.168.2.10:8080
 
 ## API's
 
