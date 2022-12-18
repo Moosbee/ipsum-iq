@@ -85,7 +85,7 @@ app.post('/login', async (req, res) => {
 
         else if(isUser && isUserPassword) {
             req.session.authenticated = true;
-            req.session.user = an[0][0].username;
+            req.session.user = an[0][1].username;
             res.json(req.session);
             console.log("User Cookie set");
         }

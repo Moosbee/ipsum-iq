@@ -13,7 +13,7 @@ function Login(props: any) {
       name: username,
       password: password
     }).then((Response) =>{
-      console.log(Response);
+      console.log(Response.data);
     });
   }
 
