@@ -2,12 +2,10 @@ const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
-const database = require('./database');
 const session = require("express-session");
 const store = new session.MemoryStore();
 
 const mysql = require('mysql2/promise');
-
 const connInfo={
     host: "127.0.0.1",
     user: "root",
@@ -15,6 +13,7 @@ const connInfo={
     database: "ipsum_iq",
     connectionLimit: 10
 }
+const connection = mysql.createConnection(connInfo);
 
 app.use(session({
     secret:'secretkey',
@@ -22,9 +21,6 @@ app.use(session({
     saveUninitialized: false,
     store
 }));
-
-const connection = mysql.createConnection(connInfo);
-
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
