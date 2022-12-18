@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require("express-session");
 const store = new session.MemoryStore();
+const cors = require('cors');
 
 const mysql = require('mysql2/promise');
 const connInfo={
@@ -24,6 +25,7 @@ app.use(session({
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cors());
 
 
 app.get('/', (req, res) => {
@@ -63,11 +65,7 @@ app.post('/users', async (req, res) => {
 //Login Code
 app.post('/login', async (req, res) => {
 
-    console.log(req.sessionID)
     let an = await (await connection).query("SELECT username, password FROM user");
-
-    console.log(an);
-    
     let isAdmin = req.body.name === an[0][0].username;
     let isAdminPassword = await bcrypt.compare(req.body.password, an[0][0].password);
     let isUser = req.body.name === an[0][1].username;
@@ -76,7 +74,7 @@ app.post('/login', async (req, res) => {
     if (an) {
         if (req.session.authenticated) {
             res.json(req.session);
-            console.log("moruk");
+            console.log("Cookie already set");
         }
         else if(isAdmin && isAdminPassword) {
             req.session.authenticated = true;
@@ -102,4 +100,4 @@ app.post('/login', async (req, res) => {
 
 });
 
-app.listen(3000);
+app.listen(3001);
