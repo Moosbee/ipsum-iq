@@ -41,9 +41,6 @@
 
 bool ledState = false;
 const int ledPin = LED_BUILTIN;
-unsigned long zeit2 = 0;
-char jsonResp[] = "{!status!:?}";
-
 
 bool btnState = false;
 const int btnPin = 2;
@@ -51,6 +48,9 @@ const int btnPin = 2;
 bool resetState = false;
 const int resetPin = 2;
 int resetTimer = 0;
+
+unsigned long zeit2 = 0;
+char jsonResp[] = "{!status!:?}";
 
 byte serverIp[4] = {192,168,2,10};
 int serverPort = 8080;
@@ -123,8 +123,9 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
   case WStype_BIN:
     debug("[WSc] get binary length:");
     debugln(length);
+    #if DEBUG == 1
     hexdump(payload, length);
-
+#endif
     // send data to server
     // webSocket.sendBIN(payload, length);
     break;
