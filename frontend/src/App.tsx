@@ -9,23 +9,17 @@ import Layout from "./components/layout";
 function App() {
   return (
     <div className="">
-      {/* <ProjectsPage /> */}
-      {/* <Router>
+      {<ProjectsPage />}
+      
         <Routes>
-          <Route path="mainpage" element={<Mainpage />} />
-        </Routes>
-        <Routes>
+          <Route path="/mainpage" element={<Mainpage />} />
           <Route path="/" element={<Login />} />
-        </Routes>
-      </Router> */}
-      <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route path="Mainpage" element={<Mainpage />} />
+          <Route path="/" element={<Layout />}/>
+          <Route path="/Mainpage" element={<Mainpage />} />
 
         {/* Optional index route if no nested routes match */}
-        <Route index element={<Login />} />
-      </Route>
-    </Routes>
+          <Route index element={<Login />} />
+        </Routes>
     </div>
   );
 }
