@@ -10,14 +10,7 @@ function App() {
   return (
     <div className="">
       {/* <ProjectsPage /> */}
-      {/* <Router>
-        <Routes>
-          <Route path="mainpage" element={<Mainpage />} />
-        </Routes>
-        <Routes>
-          <Route path="/" element={<Login />} />
-        </Routes>
-      </Router> */}
+      
       <Routes>
       <Route path="/" element={<Layout />}>
         <Route path="Mainpage" element={<Mainpage />} />
