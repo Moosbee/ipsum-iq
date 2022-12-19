@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Axios from 'axios';
-import {BrowserRouter as Router, Route} from "react-router-dom";
+import {BrowserRouter as Router, Navigate, Route} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 function Login(props: any) {
@@ -8,6 +9,8 @@ function Login(props: any) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [LoginStatus, setLoginStatus] = useState("");
+
+  const navigate = useNavigate();
 
   Axios.defaults.withCredentials = true;
 
@@ -18,6 +21,10 @@ function Login(props: any) {
     }).then((Response) => { 
       if(Response.data.message) {
         setLoginStatus(Response.data.message);
+        if(Response.data.message == "admin" || Response.data.message == "user") {
+          navigate("/Mainpage");
+        }
+        
       }
       else {
         setLoginStatus(Response.data[0].username);

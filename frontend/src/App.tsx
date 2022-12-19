@@ -12,7 +12,6 @@ function App() {
       
       <Routes>
         <Route path="/mainpage" element={<Mainpage />} />
-        <Route path="/" element={<Login />} />
         <Route path="/" element={<Layout />}/>
         <Route path="/Mainpage" element={<Mainpage />} />
 
