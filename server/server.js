@@ -19,7 +19,7 @@ const connection = mysql.createConnection(connInfo);
 
 app.use(session({
     secret:'secretkey',
-    cookie: {maxAge: 3000 * 3},
+    cookie: {maxAge: 1000 * 60},
     saveUninitialized: false,
     resave: false,
     store
