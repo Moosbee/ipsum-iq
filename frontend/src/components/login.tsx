@@ -31,24 +31,12 @@ function Login(props: any) {
       }
     });
   }
-
-  useEffect(()=> {
-    Axios.get('http://localhost:3001/login').then((Response) => {
-        console.log(Response);
-        if(Response.data.LoggedIn) {
-          
-        }
-        
-    });
-  }, []);
-
+  
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500">
       <div className="grid place-items-center h-screen">
         <div className="Login w-80 h-80 shadow rounded bg-white">
           <img className="scale-75 pb-8" src="logotest.png" alt="" />
-
-          
             <div className="pt-2 flex justify-center">
               <label className="border-b border-black">
                 <input
@@ -90,10 +78,12 @@ function Login(props: any) {
             <div className="flex justify-center">
               <h1>{LoginStatus}</h1>
             </div>
-           
+
+            </div>
+            
         </div>
       </div>
-    </div>
+    
   );
 }
 

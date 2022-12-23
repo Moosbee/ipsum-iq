@@ -19,7 +19,7 @@ const connection = mysql.createConnection(connInfo);
 
 app.use(session({
     secret:'secretkey',
-    cookie: {maxAge: 3000},
+    cookie: {maxAge: 3000 * 3},
     saveUninitialized: false,
     resave: false,
     store
@@ -50,9 +50,15 @@ app.get('/login', (req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    console.log(store);
-    res.send("test");
+app.get('/Mainpage',(req, res) => {
+
+    if(req.session.user) {
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+
 });
 
 //Register Code
