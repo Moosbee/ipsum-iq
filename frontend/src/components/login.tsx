@@ -87,7 +87,10 @@ function Login(props: any) {
               </span>
             </button>
             </div>
-            <h1>{LoginStatus}</h1>
+            <div className="flex justify-center">
+              <h1>{LoginStatus}</h1>
+            </div>
+           
         </div>
       </div>
     </div>
