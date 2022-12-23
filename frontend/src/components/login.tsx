@@ -27,7 +27,7 @@ function Login(props: any) {
             <div className="pt-2 flex justify-center">
               <label className="border-b border-black">
                 <input
-                  className="ttit ppearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                  className="ttit ppearance-none bg-transparent border-none w-full text-black mr-3 py-1 px-2 leading-tight focus:outline-none"
                   type="text"
                   onChange={(e)=> 
                     {
