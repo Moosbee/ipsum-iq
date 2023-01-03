@@ -32,6 +32,23 @@ function Login(props: any) {
     });
   }
   
+  useEffect(()=> {
+    Axios.get('http://localhost:3001/login').then((Response) => {
+
+    if(Response.data.LoggedIn) {
+      console.log("LOGGED IN");
+      navigate("/Mainpage");
+
+    }
+    else {
+      console.log("LOGGED out");
+      navigate("/");
+    }
+        
+    });
+  }, []);
+
+
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500">
       <div className="grid place-items-center h-screen">
