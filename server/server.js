@@ -3,6 +3,7 @@ const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require("express-session");
+const cookieParser = require("cookie-parser")
 const store = new session.MemoryStore();
 const cors = require('cors');
 
@@ -18,19 +19,46 @@ const connection = mysql.createConnection(connInfo);
 
 app.use(session({
     secret:'secretkey',
-    cookie: {maxAge: 300000},
+    cookie: {maxAge: 3000 * 3},
     saveUninitialized: false,
+    resave: false,
     store
 }));
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser())
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+    origin:["http://localhost:3000"],
+    methods:["GET", "POST"],
+    credentials: true
+}));
 
 
-app.get('/', (req, res) => {
-    console.log(store);
-    res.send("test");
+app.get('/login', (req, res) => {
+    if(req.session.authenticated) {
+        if(req.session.user === "admin") {
+            res.send({LoggedIn: true, user: req.session.user});
+        }
+        else if (req.session.user === "user") {
+            res.send({LoggedIn: true, user: req.session.user});
+        }    
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+});
+
+app.get('/Mainpage',(req, res) => {
+
+    if(req.session.user) {
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+
 });
 
 //Register Code
@@ -72,26 +100,22 @@ app.post('/login', async (req, res) => {
     let isUserPassword = await bcrypt.compare(req.body.password, an[0][1].password);
 
     if (an) {
-        if (req.session.authenticated) {
-            res.json(req.session);
-            console.log("Cookie already set");
-        }
-        else if(isAdmin && isAdminPassword) {
+        if(isAdmin && isAdminPassword) {
             req.session.authenticated = true;
             req.session.user = an[0][0].username;
-            res.json(req.session);
+            res.send({message: req.session.user});
             console.log("Admin Cookie set");
         }
 
         else if(isUser && isUserPassword) {
             req.session.authenticated = true;
             req.session.user = an[0][1].username;
-            res.json(req.session);
+            res.send({message: req.session.user});
             console.log("User Cookie set");
         }
             
         else {
-            res.send("Wrong Username or Password");
+            res.send({message: "Wrong Username or Password"});
         }
     }
     else {
