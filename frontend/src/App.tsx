@@ -5,6 +5,7 @@ import { ProjectsPage } from "./components/ProjectsPage";
 import { Login } from "./components/login";
 import Mainpage from "./components/mainpage";
 import Layout from "./components/layout";
+import Entries from "./components/entries";
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
         <Route path="/mainpage" element={<Mainpage />} />
         <Route path="/" element={<Layout />}/>
         <Route path="/Mainpage" element={<Mainpage />} />
+        <Route path="/entries" element={<Entries/>}></Route>
+        <Route path="/Entries" element={<Entries/>}></Route>
 
         {/* Optional index route if no nested routes match */}
           <Route index element={<Login />} />

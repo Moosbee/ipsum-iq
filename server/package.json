@@ -8,7 +8,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
     "wsStart": "nodemon websocketserver.js"
-    
   },
   "author": "",
   "license": "ISC",

@@ -10,14 +10,14 @@ const Mainpage = () => {
     Axios.defaults.withCredentials = true;
 
     useEffect(()=> {
-        Axios.get('http://localhost:3001/Mainpage').then((Response) => {
+        Axios.get('http://10.0.0.5:3001/Mainpage').then((Response) => {
     
         if(Response.data.LoggedIn) {
           console.log("LOGGED IN");
           navigate("/Mainpage");
-    
+          
         }
-        else {
+        else if (!Response.data.LoggedIn) {
           console.log("LOGGED out");
           navigate("/");
         }
