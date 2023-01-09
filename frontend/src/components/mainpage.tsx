@@ -17,7 +17,7 @@ const Mainpage = () => {
           navigate("/Mainpage");
     
         }
-        else {
+        else if(!Response.data.LoggedIn) {
           console.log("LOGGED out");
           navigate("/");
         }
