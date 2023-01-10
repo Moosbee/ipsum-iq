@@ -14,6 +14,8 @@
 #include <WebSocketsClient.h>
 #include <EEPROM.h>
 
+#include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
 #define DEBUG 1
 // debug/debugln for debugging
 #if DEBUG == 1
@@ -24,16 +26,16 @@
 #define debugln(x)
 #endif
 
-#ifndef STASSID
-//#define STASSID "htlwlan"
-//#define STAPSK  "htl12345"
-#define STASSID "Lorem-IQ"
-#define STAPSK "Lorem-Tech!"
-#endif
+// #ifndef STASSID
+// #define STASSID "htlwlan"
+// #define STAPSK  "htl12345"
+// #define STASSID "Lorem-IQ"
+// #define STAPSK "Lorem-Tech!"
+// #endif
 
 // Replace with your network credentials
- char *ssid = STASSID;
- char *password = STAPSK;
+// char *ssid = STASSID;
+// char *password = STAPSK;
 
 bool ledState = false;
 const int ledPin = LED_BUILTIN;
@@ -50,6 +52,8 @@ char jsonResp[] = "{!status!:?}";
 
 byte serverIp[4] = { 192, 168, 2, 10 };
 int serverPort = 8080;
+
+WiFiManager wifiManager;
 
 // Create AsyncWebServer object on port 80
 ESP8266WebServer server(80);
@@ -161,12 +165,21 @@ void handleNotFound() {
 }
 
 
+void resetESP() {
+
+  // reset settings - wipe stored credentials for testing
+  // these are stored by the esp library
+  wifiManager.resetSettings();
+}
 
 void setup() {
   // Serial port for debugging purposes
   delay(1000);
   Serial.begin(115200);
   delay(1000);
+
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // it is a good practice to make sure your code sets wifi mode how you want it.
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW); // Turn the LED on (Note that LOW is the voltage level
@@ -175,16 +188,14 @@ void setup() {
   jsonResp[1] = 34;
   jsonResp[8] = 34;
   jsonResp[10] = 48 + ledState;
+
+  debugln("Starting...");
+
   // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(1000);
-    debugln("Connecting to WiFi...");
-  }
+  wifiManager.autoConnect("IPSUMIQ", "IQ-ESP8233");
 
   // Print ESP Local IP Address
-  debugln(WiFi.localIP());
+  // debugln(WiFi.localIP());
   digitalWrite(ledPin, HIGH);
   delay(1000);
   digitalWrite(ledPin, ledState);
@@ -215,39 +226,7 @@ void setup() {
   server.begin();
 }
 
-/** Load WLAN credentials from EEPROM */
-void loadCredentials() {
-  EEPROM.begin(512);
-  EEPROM.get(4, ssid);
-  EEPROM.get(4+sizeof(ssid), password);
-  char ok[2+1];
-  EEPROM.get(4+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.end();
-  if (String(ok) != String("OK")) {
-      ssid = STASSID;
-      password = STAPSK;
-  }
-  debugln("Recovered credentials:");
-  debugln(ssid);
-}
-
-/** Store WLAN credentials to EEPROM */
-void saveCredentials() {
-  EEPROM.begin(512);
-  EEPROM.put(4, ssid);
-  EEPROM.put(4+sizeof(ssid), password);
-  char ok[2+1] = "OK";
-  EEPROM.put(4+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.commit();
-  EEPROM.end();
-}
-
-void writeServer(byte Ip[4],int port){
-  
-}
-
-void loop()
-{
+void loop() {
   webSocket.loop();
   server.handleClient();
   unsigned long zeit1 = millis();
