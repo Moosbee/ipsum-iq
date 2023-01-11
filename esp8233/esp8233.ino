@@ -11,12 +11,10 @@
 
 // Import required libraries
 
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-
 #include <WebSocketsClient.h>
 #include <EEPROM.h>
+
+#include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
 #define DEBUG 1
 // debug/debugln for debugging
@@ -28,16 +26,16 @@
 #define debugln(x)
 #endif
 
-#ifndef STASSID
-//#define STASSID "htlwlan"
-//#define STAPSK  "htl12345"
-#define STASSID "Lorem-IQ"
-#define STAPSK "Lorem-Tech!"
-#endif
+// #ifndef STASSID
+// #define STASSID "htlwlan"
+// #define STAPSK  "htl12345"
+// #define STASSID "Lorem-IQ"
+// #define STAPSK "Lorem-Tech!"
+// #endif
 
 // Replace with your network credentials
- char *ssid = STASSID;
- char *password = STAPSK;
+// char *ssid = STASSID;
+// char *password = STAPSK;
 
 bool ledState = false;
 const int ledPin = LED_BUILTIN;
@@ -52,11 +50,13 @@ int resetTimer = 0;
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
 
-byte serverIp[4] = {192,168,2,10};
+byte serverIp[4] = { 192, 168, 2, 10 };
 int serverPort = 8080;
 
+WiFiManager wifiManager;
+
 // Create AsyncWebServer object on port 80
-AsyncWebServer server(80);
+ESP8266WebServer server(80);
 WebSocketsClient webSocket;
 
 const char index_html[] PROGMEM = R"rawliteral(
@@ -65,87 +65,121 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-String processor(const String &var)
-{
-  debugln(var);
-  return String();
-}
-
-void setLED(bool newState)
-{
+void setLED(bool newState) {
   ledState = newState;
   jsonResp[10] = 48 + ledState;
   digitalWrite(ledPin, !ledState);
+  webSocket.sendTXT(jsonResp);
   debug("State: ");
   debugln(ledState);
 }
 
-void handleWebSocketMessage(uint8_t *data, size_t len)
-{
+void handleWebSocketMessage(uint8_t* data, size_t len) {
 
   data[len] = 0;
-  if (strcmp((char *)data, "toggle") == 0)
-  {
+  if (strcmp((char*)data, "toggle") == 0) {
     setLED(!ledState);
-  }else if (strcmp((char *)data, "on") == 0)
-  {
+  }
+  else if (strcmp((char*)data, "on") == 0) {
     setLED(true);
-  }else if (strcmp((char *)data, "off") == 0)
-  {
+  }
+  else if (strcmp((char*)data, "off") == 0) {
     setLED(false);
   }
 }
 
-void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
-{
+void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
 
-  switch (type)
-  {
-  case WStype_DISCONNECTED:
-    debugln("[WSc] Disconnected!");
-    break;
-  case WStype_CONNECTED:
-  {
-    debugln("[WSc] Connected");
+  switch (type) {
+    case WStype_DISCONNECTED:
+      debugln("[WSc] Disconnected!");
+      break;
+    case WStype_CONNECTED:
+      {
+        debugln("[WSc] Connected");
 
-    // send message to server when Connected
-    webSocket.sendTXT("Connected");
-  }
-  break;
-  case WStype_TEXT:
+        // send message to server when Connected
+        webSocket.sendTXT("Connected");
+      }
+      break;
+    case WStype_TEXT:
 #if DEBUG == 1
-    Serial.printf("[WSc] get text: %s\n", payload);
+      Serial.printf("[WSc] get text: %s\n", payload);
 #endif
-    handleWebSocketMessage(payload, length);
-    // send message to server
-    // webSocket.sendTXT("message here");
-    break;
-  case WStype_BIN:
-    debug("[WSc] get binary length:");
-    debugln(length);
-    #if DEBUG == 1
-    hexdump(payload, length);
+      handleWebSocketMessage(payload, length);
+      // send message to server
+      // webSocket.sendTXT("message here");
+      break;
+    case WStype_BIN:
+      debug("[WSc] get binary length:");
+      debugln(length);
+#if DEBUG == 1
+      hexdump(payload, length);
 #endif
-    // send data to server
-    // webSocket.sendBIN(payload, length);
-    break;
-  case WStype_PING:
-    // pong will be send automatically
-    debugln("[WSc] get ping");
-    break;
-  case WStype_PONG:
-    // answer to a ping we send
-    debugln("[WSc] get pong");
-    break;
+      // send data to server
+      // webSocket.sendBIN(payload, length);
+      break;
+    case WStype_PING:
+      // pong will be send automatically
+      debugln("[WSc] get ping");
+      break;
+    case WStype_PONG:
+      // answer to a ping we send
+      debugln("[WSc] get pong");
+      break;
   }
 }
 
-void setup()
-{
+void handleStatus() {
+  server.send(200, "text/plain", jsonResp);
+}
+void handleToggle() {
+  setLED(!ledState);
+  server.send(200, "text/plain", jsonResp);
+}
+void handleToggleOn() {
+  setLED(true);
+  server.send(200, "text/plain", jsonResp);
+}
+void handleToggleOff() {
+  setLED(false);
+  server.send(200, "text/plain", jsonResp);
+}
+
+// AdvancedWebServer.ino
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+
+  server.send(404, "text/plain", message);
+}
+
+
+void resetESP() {
+
+  // reset settings - wipe stored credentials for testing
+  // these are stored by the esp library
+  wifiManager.resetSettings();
+}
+
+void setup() {
   // Serial port for debugging purposes
   delay(1000);
   Serial.begin(115200);
   delay(1000);
+
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // it is a good practice to make sure your code sets wifi mode how you want it.
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW); // Turn the LED on (Note that LOW is the voltage level
@@ -154,50 +188,30 @@ void setup()
   jsonResp[1] = 34;
   jsonResp[8] = 34;
   jsonResp[10] = 48 + ledState;
+
+  debugln("Starting...");
+
   // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(1000);
-    debugln("Connecting to WiFi...");
-  }
+  wifiManager.autoConnect("IPSUMIQ", "IQ-ESP8233");
 
   // Print ESP Local IP Address
-  debugln(WiFi.localIP());
+  // debugln(WiFi.localIP());
   digitalWrite(ledPin, HIGH);
   delay(1000);
   digitalWrite(ledPin, ledState);
 
   // Route for root / web page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    debugln("Root");
-    request->send_P(200, "text/html", index_html, processor); });
+  // server.on("/",handleRoot); //Not needed
 
-  server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    debugln("Status");
-    
-    request->send_P(200, "text/html", jsonResp, processor); });
+  server.on("/status", handleStatus);
 
-  server.on("/toggle/on", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
-    setLED(true);
-    debugln("toggle on");
-    
-    request->send_P(200, "text/html", jsonResp, processor); });
+  server.on("/toggle/on", handleToggleOn);
 
-  server.on("/toggle/off", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
-    setLED(false);
-    debugln("toggle off");
-    request->send_P(200, "text/html", jsonResp, processor); });
+  server.on("/toggle/off", handleToggleOff);
 
-  server.on("/toggle", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
-    setLED(!ledState);
-    debugln("toggle");
-    request->send_P(200, "text/html", jsonResp, processor); });
+  server.on("/toggle", handleToggle);
+
+  server.onNotFound(handleNotFound);
 
   // server address, port and URL
   webSocket.begin(serverIp, serverPort, "/");
@@ -212,44 +226,12 @@ void setup()
   server.begin();
 }
 
-/** Load WLAN credentials from EEPROM */
-void loadCredentials() {
-  EEPROM.begin(512);
-  EEPROM.get(4, ssid);
-  EEPROM.get(4+sizeof(ssid), password);
-  char ok[2+1];
-  EEPROM.get(4+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.end();
-  if (String(ok) != String("OK")) {
-      ssid = STASSID;
-      password = STAPSK;
-  }
-  debugln("Recovered credentials:");
-  debugln(ssid);
-}
-
-/** Store WLAN credentials to EEPROM */
-void saveCredentials() {
-  EEPROM.begin(512);
-  EEPROM.put(4, ssid);
-  EEPROM.put(4+sizeof(ssid), password);
-  char ok[2+1] = "OK";
-  EEPROM.put(4+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.commit();
-  EEPROM.end();
-}
-
-void writeServer(byte Ip[4],int port){
-  
-}
-
-void loop()
-{
+void loop() {
   webSocket.loop();
+  server.handleClient();
   unsigned long zeit1 = millis();
-  if (zeit2 <= zeit1)
-  {
-    zeit2 = zeit1 + 1000;
+  if (zeit2 <= zeit1) {
+    zeit2 = zeit1 + 5000;
     webSocket.sendTXT(jsonResp);
   }
 }
