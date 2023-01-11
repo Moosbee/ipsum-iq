@@ -13,7 +13,7 @@ var WebSocketServer = require("websocket").server;
 const server = http.createServer(app);
 
 const mysql = require('mysql2/promise');
-const connInfo={
+const connInfo = {
     host: "127.0.0.1",
     user: "root",
     password: "",
@@ -23,12 +23,12 @@ const connInfo={
 const connection = mysql.createConnection(connInfo);
 
 app.use(session({
-    secret:'secretkey',
-    cookie: {maxAge: 1000 * 60 * 10},
+    secret: 'secretkey',
+    cookie: { maxAge: 1000 * 60 * 10 },
     saveUninitialized: false,
     resave: false,
     store,
-    
+
 }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -36,77 +36,133 @@ app.use(cookieParser())
 app.use(express.json());
 
 app.use(cors({
-    origin:["http://localhost:3000", "http://10.0.0.5:3000"],
-    methods:["GET", "POST"],
+    origin: ["http://localhost:3000", "http://10.0.0.5:3000"],
+    methods: ["GET", "POST"],
     credentials: true
 }));
 
 app.get('/entries', async (req, res) => {
 
-    let queryresult = await (await connection).query("SELECT * FROM eintraege");
-    
-    if(req.session.user) {
-        res.send({LoggedIn: true, result: queryresult});
+    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege;");
+
+    if (req.session.user) {
+        if (req.session.user == "admin") {
+            res.send({ LoggedIn: true, result: queryresult, isAdmin: true });
+        }
+        else {
+            res.send({ LoggedIn: true, isAdmin: false })
+        }
     }
     else {
-        res.send({LoggedIn: false});
+        res.send({ LoggedIn: false });
     }
+});
+
+app.post('/entries', async (req, res) => {
+
+    // try {
+        if (req.session.user) {
+
+            console.log("USER: " + req.session.user);
+            let date_ob = new Date();
+    
+            let day = ("0" + date_ob.getDate()).slice(-2);
+    
+    
+            let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    
+    
+            let year = date_ob.getFullYear();
+    
+    
+            let hours = date_ob.getHours();
+    
+    
+            let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);
+    
+    
+            let seconds = date_ob.getSeconds();
+    
+            let date = day + "-" + month + "-" + year;
+            let time = hours + ":" + minutes + ":" + seconds;
+            
+            let user = req.session.user;
+            let licht = 1;
+            let status = "aus";
+    
+            console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
+            
+            const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
+            // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
+            (await connection).query(InsertQuery);
+    
+        }
+    
+        else {
+            res.send({ LoggedIn: false });
+        }
+    
+    // }
+    // catch {
+    //     res.status(500).send("Fatal Error");
+    // }
+    
 });
 
 
 app.get('/login', (req, res) => {
-    if(req.session.authenticated) {
-        if(req.session.user === "admin") {
-            res.send({LoggedIn: true, user: req.session.user});
+    if (req.session.authenticated) {
+        if (req.session.user === "admin") {
+            res.send({ LoggedIn: true, user: req.session.user });
         }
         else if (req.session.user === "user") {
-            res.send({LoggedIn: true, user: req.session.user});
-        }    
+            res.send({ LoggedIn: true, user: req.session.user });
+        }
     }
     else {
-        res.send({LoggedIn: false});
+        res.send({ LoggedIn: false });
     }
 });
 
-app.get('/Mainpage',(req, res) => {
+app.get('/Mainpage', (req, res) => {
 
-    if(req.session.user) {
-        res.send({LoggedIn: true});
+    if (req.session.user) {
+        res.send({ LoggedIn: true });
     }
     else {
-        res.send({LoggedIn: false});
+        res.send({ LoggedIn: false });
     }
 
 });
 
-//Register Code
-// app.post('/users', async (req, res) => {
-//     try {
+// Register Code
+app.post('/users', async (req, res) => {
+    try {
 
-//         const salt = await bcrypt.genSalt(10);
-//         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-//         console.log(salt);
-//         console.log(hashedPassword);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        console.log(salt);
+        console.log(hashedPassword);
 
-//         const user = { name: req.body.name, password: hashedPassword };
-//         const query = `INSERT INTO user (username, password) VALUES ("${user.name}", "${user.password}")`;
-//         res.status(201).send("Successfully registered");
-        
-//         connection.pool.query(query, (err, result, fields) => {
-//             if (result) {
-//                 return console.log(result);
-//             }
-//             else {
-//                 return console.log(err);
-//             }
-//         });
+        const user = { name: req.body.name, password: hashedPassword };
+        const query = `INSERT INTO user (username, password) VALUES ("${user.name}", "${user.password}")`;
+        res.status(201).send("Successfully registered");
 
-//     } catch {
-//         res.status(500).send("Fatal Error");
-//     }
+        connection.pool.query(query, (err, result, fields) => {
+            if (result) {
+                return console.log(result);
+            }
+            else {
+                return console.log(err);
+            }
+        });
+
+    } catch {
+        res.status(500).send("Fatal Error");
+    }
 
 
-// });
+});
 
 //Login Code
 app.post('/login', async (req, res) => {
@@ -118,22 +174,24 @@ app.post('/login', async (req, res) => {
     let isUserPassword = await bcrypt.compare(req.body.password, an[0][1].password);
 
     if (an) {
-        if(isAdmin && isAdminPassword) {
+        if (isAdmin && isAdminPassword) {
             req.session.authenticated = true;
             req.session.user = an[0][0].username;
-            res.send({message: req.session.user});
+            res.send({ message: req.session.user });
             console.log("Admin Cookie set");
+            console.log(req.session.user);
         }
 
-        else if(isUser && isUserPassword) {
+        else if (isUser && isUserPassword) {
             req.session.authenticated = true;
             req.session.user = an[0][1].username;
-            res.send({message: req.session.user});
+            res.send({ message: req.session.user });
             console.log("User Cookie set");
+            console.log(req.session.user);
         }
-            
+
         else {
-            res.send({message: "Wrong Username or Password"});
+            res.send({ message: "Wrong Username or Password" });
         }
     }
     else {
@@ -146,29 +204,29 @@ app.post('/login', async (req, res) => {
 //Websocket Server Code
 
 wsServer = new WebSocketServer({
-  httpServer: server,
-  autoAcceptConnections: false,
+    httpServer: server,
+    autoAcceptConnections: false,
 });
 
 
 wsServer.on("request", function (request) {
-  var connection = request.accept();
-  console.log("Connection accepted.");
+    var connection = request.accept();
+    console.log("Connection accepted.");
 
-  connection.on("message", function (message) {
-    if (message.type === "utf8") {
-      console.log("Received Message: " + message.utf8Data);
-      
-    } else if (message.type === "binary") {
-      console.log(
-        "Received Binary Message of " + message.binaryData.length + " bytes"
-      );
-      // connection.sendBytes(message.binaryData);
-    }
-  });
-  connection.on("close", function (reasonCode, description) {
-    console.log("Peer " + connection.remoteAddress + " disconnected.");
-  });
+    connection.on("message", function (message) {
+        if (message.type === "utf8") {
+            console.log("Received Message: " + message.utf8Data);
+
+        } else if (message.type === "binary") {
+            console.log(
+                "Received Binary Message of " + message.binaryData.length + " bytes"
+            );
+            // connection.sendBytes(message.binaryData);
+        }
+    });
+    connection.on("close", function (reasonCode, description) {
+        console.log("Peer " + connection.remoteAddress + " disconnected.");
+    });
 });
 
 server.listen(3001, () => {

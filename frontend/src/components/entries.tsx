@@ -16,8 +16,11 @@ const Entries = () => {
         Axios.get('http://localhost:3001/entries').then((Response) => {
 
 
-            if (Response.data.LoggedIn || Response.status != 200) {
+            if (Response.data.isAdmin || Response.status != 200) {
                 navigate("/Entries");
+            }
+            else if (Response.data.LoggedIn && Response.data.isAdmin == false){
+                navigate("/Mainpage");
             }
             else {
                 navigate("/");

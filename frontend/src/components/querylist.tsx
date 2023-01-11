@@ -55,7 +55,7 @@ const Querylist = () => {
                                     <td>{entry.Datum}</td>
                                     <td>{entry.Status}</td>
                                     <td>{entry.Licht}</td>
-                                    <br />
+                                   
                                 </tr>
                                 </>
                                 
