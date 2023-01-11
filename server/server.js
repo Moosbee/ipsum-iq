@@ -24,7 +24,7 @@ const connection = mysql.createConnection(connInfo);
 
 app.use(session({
     secret:'secretkey',
-    cookie: {maxAge: 1000 * 6},
+    cookie: {maxAge: 1000 * 60 * 10},
     saveUninitialized: false,
     resave: false,
     store,
@@ -44,8 +44,7 @@ app.use(cors({
 app.get('/entries', async (req, res) => {
 
     let queryresult = await (await connection).query("SELECT * FROM eintraege");
-    console.log(queryresult);
-
+    
     if(req.session.user) {
         res.send({LoggedIn: true, result: queryresult});
     }

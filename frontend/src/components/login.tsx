@@ -15,7 +15,7 @@ function Login(props: any) {
   Axios.defaults.withCredentials = true;
 
   function PostLogin() {
-    Axios.post('http://10.0.0.5:3001/login', {
+    Axios.post('http://localhost:3001/login', {
       name: username,
       password: password
     }).then((Response) => { 
@@ -33,7 +33,7 @@ function Login(props: any) {
   }
   
   useEffect(()=> {
-    Axios.get('http://10.0.0.5:3001/login').then((Response) => {
+    Axios.get('http://localhost:3001/login').then((Response) => {
 
     if(Response.data.LoggedIn) {
       console.log("LOGGED IN");
