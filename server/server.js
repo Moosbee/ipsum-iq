@@ -8,11 +8,14 @@ const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
 var WebSocketServer = require("websocket").server;
+let led1state = false;
+let led2state = false;
 
 
 const server = http.createServer(app);
 
 const mysql = require('mysql2/promise');
+const { client } = require('websocket');
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -108,7 +111,6 @@ app.post('/entries', async (req, res) => {
     // }
     
 });
-
 
 app.get('/login', (req, res) => {
     if (req.session.authenticated) {
@@ -210,13 +212,31 @@ wsServer = new WebSocketServer({
 
 
 wsServer.on("request", function (request) {
+
+
     var connection = request.accept();
     console.log("Connection accepted.");
+
+    
 
     connection.on("message", function (message) {
         if (message.type === "utf8") {
             console.log("Received Message: " + message.utf8Data);
+            // let msg = JSON.parse(message.utf8Data)
 
+            if(message.utf8Data == "0") {
+                led1state = false;
+                console.log(led1state);
+            }
+            else if (message.utf8Data == "1") {
+                led1state = true;
+                console.log(led1state);
+            }
+            else {
+                console.log("Invalid message");
+            }
+
+            
         } else if (message.type === "binary") {
             console.log(
                 "Received Binary Message of " + message.binaryData.length + " bytes"
