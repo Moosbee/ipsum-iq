@@ -31,4 +31,4 @@ client.on("connect", function (connection) {
   });
 });
 
-client.connect("ws://localhost:8080/");
+client.connect("ws://localhost:3001/");
