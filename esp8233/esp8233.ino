@@ -8,6 +8,9 @@
 // https://www.circuitschools.com/change-wifi-credentials-of-esp8266-without-uploading-code-again/
 // https://arduino.stackexchange.com/questions/54525/connecting-an-esp8266-to-wifi-without-hardcoding-the-credentials
 // https://github.com/tzapu/WiFiManager
+// https://roboticsbackend.com/arduino-write-string-in-eeprom/  
+// https://docs.arduino.cc/learn/built-in-libraries/eeprom
+
 
 // Import required libraries
 
@@ -26,6 +29,14 @@
 #define debugln(x)
 #endif
 
+// https://forum.arduino.cc/t/detecting-falling-and-rising-edges/291011/3
+
+// macro for detection af rasing edge
+#define RE(signal, state) (state = (state << 1) | (signal & 1) & 3) == 1
+
+// macro for detection af falling edge
+#define FE(signal, state) (state = (state << 1) | (signal & 1) & 3) == 2
+
 // #ifndef STASSID
 // #define STASSID "htlwlan"
 // #define STAPSK  "htl12345"
@@ -42,16 +53,19 @@ const int ledPin = LED_BUILTIN;
 
 bool btnState = false;
 const int btnPin = 2;
+bool risingFalling = true;
 
 bool resetState = false;
 const int resetPin = 2;
-int resetTimer = 0;
+unsigned long zeitResetPin = 0;
 
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
 
-byte serverIp[4] = { 192, 168, 2, 10 };
-int serverPort = 8080;
+char websocket_server[40] = "192.168.2.10";
+char websocket_port[6] = "8080";
+
+bool shouldSaveConfig = false;
 
 WiFiManager wifiManager;
 
@@ -164,22 +178,54 @@ void handleNotFound() {
   server.send(404, "text/plain", message);
 }
 
+//callback notifying us of the need to save config
+void saveConfigCallback() {
+  debugln("Should save config");
+  shouldSaveConfig = true;
+}
+
+void rebootESP() {
+  debugln("Rebooting");
+  ESP.restart();
+}
 
 void resetESP() {
 
   // reset settings - wipe stored credentials for testing
   // these are stored by the esp library
+  debugln("Resetting");
   wifiManager.resetSettings();
+  ESP.restart();
+}
+
+
+void loadConfigFromEEPROM() {
+  debugln("Start load from EEPROM");
+  EEPROM.put(5, websocket_server);
+  EEPROM.put(46, websocket_port);
+  debugln("Finish load from EEPROM");
+}
+
+void saveConfigToEEPROM() {
+  debugln("Start saving from EEPROM");
+  EEPROM.get(5, websocket_server);
+  EEPROM.get(46, websocket_port);
+  debugln("Finish saving from EEPROM");
 }
 
 void setup() {
   // Serial port for debugging purposes
+#if DEBUG == 1
   delay(1000);
   Serial.begin(115200);
+#endif
   delay(1000);
 
   // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // it is a good practice to make sure your code sets wifi mode how you want it.
+
+  EEPROM.begin(128);
+  delay(500);
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW); // Turn the LED on (Note that LOW is the voltage level
@@ -191,14 +237,42 @@ void setup() {
 
   debugln("Starting...");
 
+  loadConfigFromEEPROM();
+
+  wifiManager.setConfigPortalTimeout(180);
+
+  // id/name, placeholder/prompt, default, length
+  WiFiManagerParameter custom_websocket_server("server", "websocket server", websocket_server, 40);
+
+  // id/name, placeholder/prompt, default, length
+  WiFiManagerParameter custom_websocket_port("port", "websocket port", websocket_port, 6);
+
+  wifiManager.addParameter(&custom_websocket_server);
+  wifiManager.addParameter(&custom_websocket_port);
+
+  wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+  wifiManager.setCustomHeadElement("<style>html{color:lightgreen;}</style>");
+
   // Connect to Wi-Fi
   wifiManager.autoConnect("IPSUMIQ", "IQ-ESP8233");
 
   // Print ESP Local IP Address
-  // debugln(WiFi.localIP());
+  debugln(WiFi.localIP());
   digitalWrite(ledPin, HIGH);
   delay(1000);
   digitalWrite(ledPin, ledState);
+
+  if (shouldSaveConfig) {
+    strcpy(websocket_server, custom_websocket_server.getValue());
+    strcpy(websocket_port, custom_websocket_port.getValue());
+    saveConfigToEEPROM();
+  }
+
+  debugln("The values in the file are: ");
+  debugln(websocket_server);
+  debugln(websocket_port);
+
 
   // Route for root / web page
   // server.on("/",handleRoot); //Not needed
@@ -211,10 +285,15 @@ void setup() {
 
   server.on("/toggle", handleToggle);
 
+  server.on("/reset", resetESP);
+
+  server.on("/reboot", rebootESP);
+
+
   server.onNotFound(handleNotFound);
 
   // server address, port and URL
-  webSocket.begin(serverIp, serverPort, "/");
+  webSocket.begin(websocket_server, 8080, "/");
 
   // event handler
   webSocket.onEvent(webSocketEvent);
@@ -222,7 +301,6 @@ void setup() {
   // try ever 5000 again if connection has failed
   webSocket.setReconnectInterval(5000);
 
-  // Start server
   server.begin();
 }
 
@@ -234,4 +312,17 @@ void loop() {
     zeit2 = zeit1 + 5000;
     webSocket.sendTXT(jsonResp);
   }
+  // if (digitalRead(resetPin))
+  // {
+  //   zeitResetPin = zeit1;
+  // }
+  // if ((zeit1 - 5000) > zeitResetPin)
+  // {
+  //   resetESP();
+  // }
+  // if (RE(digitalRead(btnPin), btnState))
+  // {
+  //   // code here gets executed on raising edge of btn
+  //   setLED(!ledState);
+  // }
 }
