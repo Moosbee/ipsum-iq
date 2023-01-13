@@ -6,11 +6,13 @@ import { Login } from "./components/login";
 import Mainpage from "./components/mainpage";
 import Layout from "./components/layout";
 import Entries from "./components/entries";
+import Querylist from "./components/querylist";
 
 function App() {
   return (
     <div className="">
       
+     
       <Routes>
         <Route path="/mainpage" element={<Mainpage />} />
         <Route path="/" element={<Layout />}/>

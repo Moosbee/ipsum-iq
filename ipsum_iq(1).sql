@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 16. Dez 2022 um 09:20
--- Server-Version: 10.4.21-MariaDB
--- PHP-Version: 8.0.10
+-- Erstellungszeit: 12. Jan 2023 um 16:29
+-- Server-Version: 10.4.27-MariaDB
+-- PHP-Version: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,11 +29,20 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `eintraege` (
   `eintraege_id` int(11) NOT NULL,
-  `Zeitpunkt` time NOT NULL,
-  `Datum` date NOT NULL,
-  `user` int(11) NOT NULL,
-  `licht` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `Zeitpunkt` text NOT NULL,
+  `Datum` varchar(60) NOT NULL,
+  `Status` varchar(10) NOT NULL,
+  `licht` int(10) NOT NULL,
+  `user` varchar(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Daten für Tabelle `eintraege`
+--
+
+INSERT INTO `eintraege` (`eintraege_id`, `Zeitpunkt`, `Datum`, `Status`, `licht`, `user`) VALUES
+(12, '17:06:22', '11-01-2023', 'aus', 1, 'admin'),
+(13, '17:08:14', '11-01-2023', 'aus', 1, 'user');
 
 -- --------------------------------------------------------
 
@@ -44,7 +53,7 @@ CREATE TABLE `eintraege` (
 CREATE TABLE `licht` (
   `licht_id` int(11) NOT NULL,
   `licht_name` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `licht`
@@ -64,7 +73,7 @@ CREATE TABLE `user` (
   `user_id` int(11) NOT NULL,
   `username` text NOT NULL,
   `password` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `user`
@@ -82,9 +91,7 @@ INSERT INTO `user` (`user_id`, `username`, `password`) VALUES
 -- Indizes für die Tabelle `eintraege`
 --
 ALTER TABLE `eintraege`
-  ADD PRIMARY KEY (`eintraege_id`),
-  ADD KEY `user` (`user`),
-  ADD KEY `licht` (`licht`);
+  ADD PRIMARY KEY (`eintraege_id`);
 
 --
 -- Indizes für die Tabelle `licht`
@@ -103,6 +110,12 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT für Tabelle `eintraege`
+--
+ALTER TABLE `eintraege`
+  MODIFY `eintraege_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
 -- AUTO_INCREMENT für Tabelle `licht`
 --
 ALTER TABLE `licht`
@@ -113,17 +126,6 @@ ALTER TABLE `licht`
 --
 ALTER TABLE `user`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- Constraints der exportierten Tabellen
---
-
---
--- Constraints der Tabelle `eintraege`
---
-ALTER TABLE `eintraege`
-  ADD CONSTRAINT `eintraege_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`user_id`),
-  ADD CONSTRAINT `eintraege_ibfk_2` FOREIGN KEY (`licht`) REFERENCES `licht` (`licht_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
