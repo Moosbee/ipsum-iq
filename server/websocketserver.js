@@ -23,6 +23,13 @@ wsServer.on("request", function (request) {
   connection.on("message", function (message) {
     if (message.type === "utf8") {
       console.log("Received Message: " + message.utf8Data);
+
+      if(message.utf8Data == "0") {
+        
+      }
+      else if (message.utf8Data == "1") {
+        
+      }
       
     } else if (message.type === "binary") {
       console.log(

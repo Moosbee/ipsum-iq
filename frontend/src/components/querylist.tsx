@@ -46,7 +46,6 @@ const Querylist = () => {
                     
                         {
                             querys[0]?.map((entry: any, index: any) => 
-
                                
                                 <>
                                 <tr>

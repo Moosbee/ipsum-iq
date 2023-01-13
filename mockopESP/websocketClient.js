@@ -26,9 +26,10 @@ client.on("connect", function (connection) {
     console.log("message", message);
   });
   readline.question(`Send something:`, (name) => {
+    
     connection.sendUTF(name);
     readline.close();
   });
 });
 
-client.connect("ws://localhost:3001/");
+client.connect("ws://localhost:8080/");
