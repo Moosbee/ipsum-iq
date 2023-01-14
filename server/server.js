@@ -7,10 +7,12 @@ const cookieParser = require("cookie-parser")
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
+const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
-const server = http.createServer(app);
+const wss = new Websocket.Server({ port: 8080 });
 const IO = new Server(server);
+
 
 let led1state = false;
 let led2state = false;
@@ -66,7 +68,7 @@ app.get('/entries', async (req, res) => {
 
 app.post('/entries', async (req, res) => {
 
-    // try {
+    
     if (req.session.user) {
 
         console.log("USER: " + req.session.user);
@@ -112,18 +114,11 @@ app.post('/entries', async (req, res) => {
         // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
         (await connection).query(InsertQuery);
 
-
     }
-
     else {
         res.send({ LoggedIn: false });
     }
-
-    // }
-    // catch {
-    //     res.status(500).send("Fatal Error");
-    // }
-
+    
 });
 
 app.post('/state', (req, res) => {
@@ -230,9 +225,6 @@ app.post('/login', async (req, res) => {
 
 //Websocket Server -> ESP Code
 
-
-const wss = new Websocket.Server({ port: 8080 });
-
 wss.on('connection', ws => {
 
 
@@ -265,7 +257,9 @@ wss.on('connection', ws => {
 //SocketIo Server zu Frontend Code
 
 IO.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('a user connected: ' + socket.id);
+
+    socket.emit("Test");
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });

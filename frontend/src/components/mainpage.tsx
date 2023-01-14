@@ -1,25 +1,29 @@
 import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+
 
 const Mainpage = () => {
+
+  const socket = io("ws://localhost:3001");
   const [isActive, setActive] = useState<boolean | undefined>(false);
+  const [bulbon, setbulb] = useState<boolean | undefined>(false);
+  const navigate = useNavigate();
+  const Light = false;
  
   const mobileMenu = () => {
     setActive(!isActive);
   };
 
-  const [bulbon, setbulb] = useState<boolean | undefined>(false);
   const testbulb = () => {
     setbulb(!bulbon);
   };
 
-  const navigate = useNavigate();
-  const Light = false;
-
   Axios.defaults.withCredentials = true;
 
   useEffect(() => {
+    
     Axios.get("http://localhost:3001/Mainpage").then((Response) => {
       if (Response.data.LoggedIn) {
         console.log("LOGGED IN");
@@ -31,28 +35,6 @@ const Mainpage = () => {
     });
   }, []);
 
-  function GetLightStatus() {
-    Axios.post("http://localhost:3001/state").then((Response) => {
-
-      if (Response.data.LoggedIn) {
-
-        if(Response.data.ledState) {
-          console.log("LED STATE TRUE: " + Response.data.ledState);
-        }
-        else if (Response.data.ledState == false) {
-          console.log("LED STATE false: " + Response.data.ledState);
-        }
-        else {
-          console.log("Error :((((");
-        }
-      } 
-
-      else if (!Response.data.LoggedIn) {
-        console.log("LOGGED out");
-        navigate("/");
-      }
-    });
-  }
   function InsertIntoDB() {
     Axios.post("http://localhost:3001/entries").then((Response) => {
 
@@ -166,7 +148,7 @@ const Mainpage = () => {
             </button>
           </div>
           <button
-            onClick={() => {testbulb(); GetLightStatus()}}
+            onClick={() => {testbulb();}}
             id="btn1"
             className={
               bulbon
