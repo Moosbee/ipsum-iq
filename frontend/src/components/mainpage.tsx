@@ -8,9 +8,21 @@ const Mainpage = () => {
     setActive(!isActive);
   };
 
-  const [bulbon, setbulb] = useState<boolean | undefined>(false);
-  const testbulb = () => {
-    setbulb(!bulbon);
+  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([{
+    name:"aaa",
+    on:true
+  },{
+    name:"bbb",
+    on:false
+  }, ]);
+  const testbulb = (name:string) => {
+    const newlightstate=lightstate.map((light)=>{
+      if(light.name==name){
+        light.on=!light.on;
+      }
+      return light;
+    })
+    lighttoggle(newlightstate);
   };
 
   const navigate = useNavigate();
@@ -129,32 +141,36 @@ const Mainpage = () => {
       </nav>
 
       <div className="grid mt-2 grod-cols-1 sm:grid-cols-2 sm:gap-x-2 gap-y-3 grid-flow-row-dense ">
+            {lightstate.map((light)=>
         <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
-          <div className="grid grid-cols-4">
-            <button type="button" onClick={testbulb}>
+              <div className="grid grid-cols-4">
+            <button type="button" onClick={()=>testbulb(light.name)}>
               <img
-                src={bulbon ? "bulb_on.svg" : "bulb_off.svg"}
+                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
                 alt=""
               />
             </button>
           </div>
           <button
-            onClick={testbulb}
+            onClick={()=>testbulb(light.name)}
             id="btn1"
-            className={
-              bulbon
-                ? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed"
-                : "p-8 bg-red-600"
-            }
-            disabled={bulbon ? true : false}
-          >
+            className={light.on? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed": "p-8 bg-red-600"}
+            disabled={light.on ? true : false}>
             Turn On
           </button>
+
+           <button
+            onClick={()=>testbulb(light.name)}
+            id="btn2"
+            className={light.on? "p-8 bg-red-600 ": "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
+            disabled={light.on ? false : true}>
+            Turn off
+          </button>
         </div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
+              
+            )}
+         
       </div>
 
       {/* hover und click animation und obstond */}
