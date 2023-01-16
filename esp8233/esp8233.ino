@@ -50,8 +50,10 @@ int resetTimer = 0;
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
 
-byte serverIp[4] = { 192, 168, 2, 10 };
-int serverPort = 8080;
+char websocket_server[40] = "";
+char websocket_port[6] = "";
+
+bool shouldSaveConfig = false;
 
 WiFiManager wifiManager;
 
@@ -170,6 +172,49 @@ void resetESP() {
   // reset settings - wipe stored credentials for testing
   // these are stored by the esp library
   wifiManager.resetSettings();
+
+  ESP.restart();
+}
+
+const int offset = 50;
+
+void loadConfigFromEEPROM() {
+  EEPROM.begin(128);
+  debugln("Start load from EEPROM");
+  for (int i = 0; i < 40; i++) {
+    byte readByte = EEPROM.read(i + offset);
+    debugln(readByte);
+    websocket_server[i] = readByte;
+  }
+
+  for (int i = 0; i < 6; i++) {
+    byte readByte = EEPROM.read(i + 50 + offset);
+    debugln(readByte);
+    websocket_port[i] = readByte;
+  }
+  EEPROM.end();
+  debugln("The values in the file are: ");
+  debugln(websocket_server);
+  debugln(websocket_port);
+  debugln("Finish load from EEPROM");
+}
+
+void saveConfigToEEPROM() {
+  EEPROM.begin(128);
+  debugln("Start saving from EEPROM");
+  for (int i = 0; i < 40; i++) {
+    byte writeByte = websocket_server[i];
+    debugln(writeByte);
+    EEPROM.write(i + offset, writeByte);
+  }
+
+  for (int i = 0; i < 6; i++) {
+    byte writeByte = websocket_port[i];
+    debugln(writeByte);
+    EEPROM.write(i + 50 + offset, writeByte);
+  }
+  EEPROM.end();
+  debugln("Finish saving from EEPROM");
 }
 
 void setup() {
@@ -180,6 +225,9 @@ void setup() {
 
   // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // it is a good practice to make sure your code sets wifi mode how you want it.
+
+
+  delay(500);
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW); // Turn the LED on (Note that LOW is the voltage level
@@ -214,7 +262,7 @@ void setup() {
   server.onNotFound(handleNotFound);
 
   // server address, port and URL
-  webSocket.begin(serverIp, serverPort, "/");
+  webSocket.begin(websocket_server, atoi(websocket_port), "/");
 
   // event handler
   webSocket.onEvent(webSocketEvent);
