@@ -11,12 +11,27 @@ const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
 const wss = new Websocket.Server({ port: 8080 });
-const IO = new Server(server);
+const IO = new Server(server, {
+    cors: {
+        origin:["http://localhost:3000", "ws://localhost:3000"]
+
+    }
+});
 
 
+let ESPArray = [{
+    name: "ESP1",
+    state: true
+},
+{
+    name:"ESP2",
+    state: false
+}]
 let led1state = false;
 let led2state = false;
 let testbool = false;
+
+
 
 const mysql = require('mysql2/promise');
 const { client } = require('websocket');
@@ -50,7 +65,7 @@ app.use(cors({
 
 app.get('/entries', async (req, res) => {
 
-    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege;");
+    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC;");
 
     if (req.session.user) {
         if (req.session.user == "admin") {
@@ -124,7 +139,7 @@ app.post('/entries', async (req, res) => {
 app.post('/state', (req, res) => {
 
     if (req.session.user) {
-        res.send({ ledState: led1state, LoggedIn: true });
+        res.send({ led1State: led1state, led2State: led2state, LoggedIn: true });
     }
     else {
         res.send({ LoggedIn: false });
@@ -226,6 +241,7 @@ app.post('/login', async (req, res) => {
 //Websocket Server -> ESP Code
 
 wss.on('connection', ws => {
+    console.log("Client connected");
 
 
     ws.on('message', message => {
@@ -236,6 +252,7 @@ wss.on('connection', ws => {
             if (message == "0") {
                 led1state = false;
                 console.log(led1state);
+                
                 
             }
             else if (message == "1") {
@@ -250,19 +267,30 @@ wss.on('connection', ws => {
         });
 
    
-        ws.send("Connected to server");    
+            
 
+    ws.on("close", () => {
+        console.log("Client disconnected");
+    })
 })
 
 //SocketIo Server zu Frontend Code
 
 IO.on('connection', (socket) => {
-    console.log('a user connected: ' + socket.id);
 
-    socket.emit("Test");
+    console.log('a user connected');
+
+    socket.on("test_message", (data) => {
+        console.log("THIS IS THE DATA: " + data.message);
+      })
+
+    
+    socket.emit("ledstate", {Message: ESPArray});
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
+
 });
 
 

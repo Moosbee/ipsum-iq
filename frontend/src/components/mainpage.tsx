@@ -12,7 +12,16 @@ const Mainpage = () => {
   const navigate = useNavigate();
   const Light = false;
  
-  const mobileMenu = () => {
+  const ws = () => {
+    
+    socket.on("ledstate", (data) => {
+
+      console.log(data);
+    })
+    
+  }
+
+  const mobileMenu = () => { 
     setActive(!isActive);
   };
 
@@ -33,6 +42,10 @@ const Mainpage = () => {
         navigate("/");
       }
     });
+
+    GetLightStatus();
+    ws;
+    
   }, []);
 
   function InsertIntoDB() {
@@ -47,6 +60,32 @@ const Mainpage = () => {
       }
     });
   }
+
+  function GetLightStatus() {
+    Axios.post("http://localhost:3001/state").then((Response) => {
+
+      if (Response.data.LoggedIn) {
+
+        if(Response.data.led1State) {
+          console.log("LED STATE TRUE: " + Response.data.led1State);
+          setbulb(Response.data.led1State)
+        }
+        else if (Response.data.led1State == false) {
+          console.log("LED STATE false: " + Response.data.led1State);
+          setbulb(Response.data.led1State)
+        }
+        else {
+          console.log("Error :((((");
+        }
+      } 
+
+      else if (!Response.data.LoggedIn) {
+        console.log("LOGGED out");
+        navigate("/");
+      }
+    });
+  }
+
 
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen max-h-full">
@@ -148,7 +187,7 @@ const Mainpage = () => {
             </button>
           </div>
           <button
-            onClick={() => {testbulb();}}
+            onClick={() => {testbulb(); ws();}}
             id="btn1"
             className={
               bulbon
