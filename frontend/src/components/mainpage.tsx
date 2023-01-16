@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const Mainpage = () => {
   const [isActive, setActive] = useState<boolean | undefined>(false);
+ 
   const mobileMenu = () => {
     setActive(!isActive);
   };
@@ -42,10 +43,35 @@ const Mainpage = () => {
     });
   }, []);
 
-  function InsertIntoDB() {
-    Axios.post("http://localhost:3001/Entries").then((Response) => {
+  function GetLightStatus() {
+    Axios.post("http://localhost:3001/state").then((Response) => {
+
       if (Response.data.LoggedIn) {
-      } else if (!Response.data.LoggedIn) {
+
+        if(Response.data.ledState) {
+          console.log("LED STATE TRUE: " + Response.data.ledState);
+        }
+        else if (Response.data.ledState == false) {
+          console.log("LED STATE false: " + Response.data.ledState);
+        }
+        else {
+          console.log("Error :((((");
+        }
+      } 
+
+      else if (!Response.data.LoggedIn) {
+        console.log("LOGGED out");
+        navigate("/");
+      }
+    });
+  }
+  function InsertIntoDB() {
+    Axios.post("http://localhost:3001/entries").then((Response) => {
+
+      if (Response.data.LoggedIn) {
+
+      } 
+      else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
         navigate("/");
       }

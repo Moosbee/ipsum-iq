@@ -7,12 +7,14 @@ const cookieParser = require("cookie-parser")
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
-var WebSocketServer = require("websocket").server;
+const Websocket = require("ws");
+const { Server } = require("socket.io");
+const server = http.createServer(app);
+const IO = new Server(server);
+
 let led1state = false;
 let led2state = false;
-
-
-const server = http.createServer(app);
+let testbool = false;
 
 const mysql = require('mysql2/promise');
 const { client } = require('websocket');
@@ -59,57 +61,80 @@ app.get('/entries', async (req, res) => {
     else {
         res.send({ LoggedIn: false });
     }
+
 });
 
 app.post('/entries', async (req, res) => {
 
     // try {
-        if (req.session.user) {
+    if (req.session.user) {
 
-            console.log("USER: " + req.session.user);
-            let date_ob = new Date();
-    
-            let day = ("0" + date_ob.getDate()).slice(-2);
-    
-    
-            let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-    
-    
-            let year = date_ob.getFullYear();
-    
-    
-            let hours = date_ob.getHours();
-    
-    
-            let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);
-    
-    
-            let seconds = date_ob.getSeconds();
-    
-            let date = day + "-" + month + "-" + year;
-            let time = hours + ":" + minutes + ":" + seconds;
-            
-            let user = req.session.user;
-            let licht = 1;
-            let status = "aus";
-    
-            console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
-            
-            const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
-            // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
-            (await connection).query(InsertQuery);
-    
+        console.log("USER: " + req.session.user);
+        let date_ob = new Date();
+
+        let day = ("0" + date_ob.getDate()).slice(-2);
+
+
+        let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+
+
+        let year = date_ob.getFullYear();
+
+
+        let hours = date_ob.getHours();
+
+
+        let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);
+
+
+        let seconds = date_ob.getSeconds();
+
+        let date = day + "-" + month + "-" + year;
+        let time = hours + ":" + minutes + ":" + seconds;
+
+        let user = req.session.user;
+        let licht = 1;
+        let status;
+
+        if (led1state == false) {
+            status = "an";
+            led1state = true;
         }
-    
-        else {
-            res.send({ LoggedIn: false });
+        else if (led1state) {
+            status = "aus";
+            led1state = false;
         }
-    
+
+
+        console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
+
+        const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
+        // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
+        (await connection).query(InsertQuery);
+
+
+    }
+
+    else {
+        res.send({ LoggedIn: false });
+    }
+
     // }
     // catch {
     //     res.status(500).send("Fatal Error");
     // }
-    
+
+});
+
+app.post('/state', (req, res) => {
+
+    if (req.session.user) {
+        res.send({ ledState: led1state, LoggedIn: true });
+    }
+    else {
+        res.send({ LoggedIn: false });
+    }
+
 });
 
 app.get('/login', (req, res) => {
@@ -203,51 +228,50 @@ app.post('/login', async (req, res) => {
 });
 
 
-//Websocket Server Code
-
-wsServer = new WebSocketServer({
-    httpServer: server,
-    autoAcceptConnections: false,
-});
+//Websocket Server -> ESP Code
 
 
-wsServer.on("request", function (request) {
+const wss = new Websocket.Server({ port: 8080 });
+
+wss.on('connection', ws => {
 
 
-    var connection = request.accept();
-    console.log("Connection accepted.");
-
-    
-
-    connection.on("message", function (message) {
-        if (message.type === "utf8") {
-            console.log("Received Message: " + message.utf8Data);
+    ws.on('message', message => {
+        // if (message.type === "utf8") {
+            console.log("Received Message: " + message);
             // let msg = JSON.parse(message.utf8Data)
 
-            if(message.utf8Data == "0") {
+            if (message == "0") {
                 led1state = false;
                 console.log(led1state);
+                
             }
-            else if (message.utf8Data == "1") {
+            else if (message == "1") {
                 led1state = true;
                 console.log(led1state);
+                
             }
             else {
-                console.log("Invalid message");
+                ws.send("Invalid message");
             }
 
-            
-        } else if (message.type === "binary") {
-            console.log(
-                "Received Binary Message of " + message.binaryData.length + " bytes"
-            );
-            // connection.sendBytes(message.binaryData);
-        }
-    });
-    connection.on("close", function (reasonCode, description) {
-        console.log("Peer " + connection.remoteAddress + " disconnected.");
+        });
+
+   
+        ws.send("Connected to server");    
+
+})
+
+//SocketIo Server zu Frontend Code
+
+IO.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
     });
 });
+
+
 
 server.listen(3001, () => {
     console.log("Listening on Port 3001");

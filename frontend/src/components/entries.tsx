@@ -138,11 +138,7 @@ const Entries = () => {
    
         
          <Querylist />
-            <div>
-                <button onClick={() => printEntries()}>ASFASDFASFASF</button>
-                <br />
-
-            </div>
+            
             </div>
         
     );
