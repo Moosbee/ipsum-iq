@@ -6,17 +6,21 @@ import { io } from "socket.io-client";
 
 const Mainpage = () => {
 
-  const socket = io("ws://localhost:3001");
+
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [bulbon, setbulb] = useState<boolean | undefined>(false);
+  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([]);
   const navigate = useNavigate();
   const Light = false;
  
   const ws = () => {
+    const socket = io("ws://localhost:3001");
     
     socket.on("ledstate", (data) => {
 
       console.log(data);
+      let test = data.Message
+      lighttoggle(test);
+
     })
     
   }
@@ -25,15 +29,6 @@ const Mainpage = () => {
     setActive(!isActive);
   };
 
-  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([{
-    name:"aaa",
-    on:true
-  },{
-    name:"bbb",
-    on:false
-  }, ]);
-
-  
   const testbulb = (name:string) => {
     const newlightstate=lightstate.map((light)=>{
       if(light.name==name){
@@ -58,13 +53,12 @@ const Mainpage = () => {
       }
     });
 
-    GetLightStatus();
-    ws;
+    ws();
     
   }, []);
 
-  function InsertIntoDB() {
-    Axios.post("http://localhost:3001/entries").then((Response) => {
+  function InsertIntoDB(name: string) {
+    Axios.post("http://localhost:3001/entries", {ledname: name}).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
@@ -76,22 +70,11 @@ const Mainpage = () => {
     });
   }
 
-  function GetLightStatus() {
-    Axios.post("http://localhost:3001/state").then((Response) => {
+  function SetLightStatus(name: string) {
+    Axios.post("http://localhost:3001/state", {ledname: name}).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
-        if(Response.data.led1State) {
-          console.log("LED STATE TRUE: " + Response.data.led1State);
-          setbulb(Response.data.led1State)
-        }
-        else if (Response.data.led1State == false) {
-          console.log("LED STATE false: " + Response.data.led1State);
-          setbulb(Response.data.led1State)
-        }
-        else {
-          console.log("Error :((((");
-        }
       } 
 
       else if (!Response.data.LoggedIn) {
@@ -192,7 +175,7 @@ const Mainpage = () => {
             {lightstate.map((light)=>
         <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
               <div className="grid grid-cols-4">
-            <button type="button" onClick={()=>testbulb(light.name)}>
+            <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
               <img
                 src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
@@ -201,7 +184,7 @@ const Mainpage = () => {
             </button>
           </div>
           <button
-            onClick={()=>testbulb(light.name)}
+            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn1"
             className={light.on? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed": "p-8 bg-red-600"}
             disabled={light.on ? true : false}>
@@ -209,7 +192,7 @@ const Mainpage = () => {
           </button>
 
            <button
-            onClick={()=>testbulb(light.name)}
+            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn2"
             className={light.on? "p-8 bg-red-600 ": "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
             disabled={light.on ? false : true}>

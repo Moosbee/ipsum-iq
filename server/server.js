@@ -18,20 +18,17 @@ const IO = new Server(server, {
     }
 });
 
+let led1state = false;
+let led2state = false;
 
 let ESPArray = [{
     name: "ESP1",
-    state: true
+    on: led1state
 },
 {
     name:"ESP2",
-    state: false
+    on: led2state
 }]
-let led1state = false;
-let led2state = false;
-let testbool = false;
-
-
 
 const mysql = require('mysql2/promise');
 const { client } = require('websocket');
@@ -110,18 +107,27 @@ app.post('/entries', async (req, res) => {
         let time = hours + ":" + minutes + ":" + seconds;
 
         let user = req.session.user;
-        let licht = 1;
+        let licht = req.body.ledname;
         let status;
 
-        if (led1state == false) {
-            status = "an";
-            led1state = true;
-        }
-        else if (led1state) {
-            status = "aus";
-            led1state = false;
-        }
+    
+        for(let i = 0; i < ESPArray.length; i++) {
 
+            if(req.body.ledname == ESPArray[i].name) {
+
+                ESPArray[i].on = !ESPArray[i].on
+
+                if(ESPArray[i].on) {
+                    status = "an";
+                    
+                }
+                else if(ESPArray[i].on == false) {
+                    status = "aus";
+                }   
+               
+            }
+        }
+        
 
         console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
 
@@ -139,9 +145,19 @@ app.post('/entries', async (req, res) => {
 app.post('/state', (req, res) => {
 
     if (req.session.user) {
-        res.send({ led1State: led1state, led2State: led2state, LoggedIn: true });
+        if(req.body.ledname == "ESP1") {
+            led1state = !led1state
+            console.log("DEINE MUTTER LED1" + led1state)
+        }
+        else if (req.body.ledname == "ESP2") {
+            led2state = !led2state
+            console.log("DEINE MUTTER LED2 " + led2state)
+
+            
+        }
     }
     else {
+
         res.send({ LoggedIn: false });
     }
 
@@ -243,7 +259,6 @@ app.post('/login', async (req, res) => {
 wss.on('connection', ws => {
     console.log("Client connected");
 
-
     ws.on('message', message => {
         // if (message.type === "utf8") {
             console.log("Received Message: " + message);
@@ -266,7 +281,7 @@ wss.on('connection', ws => {
 
         });
 
-   
+        ws.send("toggle")
             
 
     ws.on("close", () => {
