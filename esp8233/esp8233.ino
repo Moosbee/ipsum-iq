@@ -16,7 +16,7 @@
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
-#define DEBUG 1
+#define DEBUG 0
 // debug/debugln for debugging
 #if DEBUG == 1
 #define debug(x) Serial.print(x)
@@ -38,14 +38,14 @@
 // char *password = STAPSK;
 
 bool ledState = false;
-const int ledPin = LED_BUILTIN;
+const int ledPin = 0;
 
 bool btnState = false;
 const int btnPin = 2;
 
 bool resetState = false;
-const int resetPin = 2;
-int resetTimer = 0;
+const int resetPin = 1;
+unsigned long zeitResetPin = 0;
 
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
@@ -281,5 +281,18 @@ void loop() {
   if (zeit2 <= zeit1) {
     zeit2 = zeit1 + 5000;
     webSocket.sendTXT(jsonResp);
+  }
+  if (digitalRead(resetPin))
+  {
+    zeitResetPin = zeit1;
+  }
+  if ((zeit1 - 5000) > zeitResetPin)
+  {
+    resetESP();
+  }
+  if (RE(digitalRead(btnPin), btnState))
+  {
+    // code here gets executed on raising edge of btn
+    setLED(!ledState);
   }
 }
