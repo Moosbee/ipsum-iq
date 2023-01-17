@@ -23,7 +23,9 @@ client.on("connect", function (connection) {
   });
 
   connection.on("message", function (message) {
-    console.log("message", message);
+    if(message.utf8Data == "toggle") {
+      console.log("DEINE MUTTER GETOGGELT");
+    }
   });
   readline.question(`Send something:`, (name) => {
     

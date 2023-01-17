@@ -33,9 +33,10 @@ const Querylist = () => {
 
         <>
 
-            <div>
+            <div className='flex justify-center'>
 
-                <table>
+                <table className='rounded-lg bg-white'>
+                    <thead>
                     <tr>
                         <th>Benutzer</th>
                         <th>Zeitpunkt</th>
@@ -43,11 +44,13 @@ const Querylist = () => {
                         <th>Status</th>
                         <th>Licht</th>
                     </tr>
+                    </thead>
                     
                         {
                             querys[0]?.map((entry: any, index: any) => 
                                
                                 <>
+                                <tbody  className="odd:bg-gray-300 even:bg-white">
                                 <tr>
                                     <td>{entry.user}</td>
                                     <td>{entry.Zeitpunkt}</td>
@@ -56,6 +59,7 @@ const Querylist = () => {
                                     <td>{entry.Licht}</td>
                                    
                                 </tr>
+                                </tbody>
                                 </>
                                 
 

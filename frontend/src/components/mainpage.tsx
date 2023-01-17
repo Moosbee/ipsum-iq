@@ -6,18 +6,37 @@ import { io } from "socket.io-client";
 
 const Mainpage = () => {
 
-  const socket = io("ws://localhost:3001");
+
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [bulbon, setbulb] = useState<boolean | undefined>(false);
+  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([]);
   const navigate = useNavigate();
   const Light = false;
  
-  const mobileMenu = () => {
+  const ws = () => {
+    const socket = io("ws://localhost:3001");
+    
+    socket.on("ledstate", (data) => {
+
+      console.log(data);
+      let test = data.Message
+      lighttoggle(test);
+
+    })
+    
+  }
+
+  const mobileMenu = () => { 
     setActive(!isActive);
   };
 
-  const testbulb = () => {
-    setbulb(!bulbon);
+  const testbulb = (name:string) => {
+    const newlightstate=lightstate.map((light)=>{
+      if(light.name==name){
+        light.on=!light.on;
+      }
+      return light;
+    })
+    lighttoggle(newlightstate);
   };
 
   Axios.defaults.withCredentials = true;
@@ -33,10 +52,13 @@ const Mainpage = () => {
         navigate("/");
       }
     });
+
+    ws();
+    
   }, []);
 
-  function InsertIntoDB() {
-    Axios.post("http://localhost:3001/entries").then((Response) => {
+  function InsertIntoDB(name: string) {
+    Axios.post("http://localhost:3001/entries", {ledname: name}).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
@@ -47,6 +69,21 @@ const Mainpage = () => {
       }
     });
   }
+
+  function SetLightStatus(name: string) {
+    Axios.post("http://localhost:3001/state", {ledname: name}).then((Response) => {
+
+      if (Response.data.LoggedIn) {
+
+      } 
+
+      else if (!Response.data.LoggedIn) {
+        console.log("LOGGED out");
+        navigate("/");
+      }
+    });
+  }
+
 
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen max-h-full">
@@ -62,7 +99,7 @@ const Mainpage = () => {
           <button
             onClick={mobileMenu}
             type="button"
-            className="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+            className="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
             aria-controls="navbar-default"
             aria-expanded="false"
           >
@@ -89,28 +126,26 @@ const Mainpage = () => {
             }
             id="navbar-default"
           >
-            <ul className="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul className="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white ">
               <li>
                 <a
                   href="Mainpage"
-                  className=" block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
-                  aria-current="page"
-                >
+                  className=" block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 "
+                  aria-current="page">
                   Home
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  About
+                  href="/Entries"
+                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 ">
+                  Log
                 </a>
               </li>
               <li>
                 <a
                   href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
                 >
                   Services
                 </a>
@@ -118,7 +153,7 @@ const Mainpage = () => {
               <li>
                 <a
                   href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
                 >
                   Pricing
                 </a>
@@ -126,7 +161,7 @@ const Mainpage = () => {
               <li>
                 <a
                   href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
                 >
                   Contact
                 </a>
@@ -137,32 +172,36 @@ const Mainpage = () => {
       </nav>
 
       <div className="grid mt-2 grod-cols-1 sm:grid-cols-2 sm:gap-x-2 gap-y-3 grid-flow-row-dense ">
+            {lightstate.map((light)=>
         <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
-          <div className="grid grid-cols-4">
-            <button type="button" onClick={testbulb}>
+              <div className="grid grid-cols-4">
+            <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
               <img
-                src={bulbon ? "bulb_on.svg" : "bulb_off.svg"}
+                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
                 alt=""
               />
             </button>
           </div>
           <button
-            onClick={() => {testbulb();}}
+            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn1"
-            className={
-              bulbon
-                ? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed"
-                : "p-8 bg-red-600"
-            }
-            disabled={bulbon ? true : false}
-          >
+            className={light.on? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed": "p-8 bg-red-600"}
+            disabled={light.on ? true : false}>
             Turn On
           </button>
+
+           <button
+            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            id="btn2"
+            className={light.on? "p-8 bg-red-600 ": "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
+            disabled={light.on ? false : true}>
+            Turn off
+          </button>
         </div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]"></div>
+              
+            )}
+         
       </div>
 
       {/* hover und click animation und obstond */}

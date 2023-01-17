@@ -78,6 +78,11 @@ function Login(props: any) {
                     {
                       setPassword(e.target.value);
                     }}
+                    onKeyDown={(e)=>{if (e.key === "Enter") {
+                        PostLogin();
+                    }
+                  }
+                }
                  
                   placeholder="Passwort"
                   required
