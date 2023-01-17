@@ -104,7 +104,7 @@ app.post('/entries', async (req, res) => {
         let seconds = date_ob.getSeconds();
 
         let date = day + "-" + month + "-" + year;
-        let time = hours + ":" + minutes + ":" + seconds;
+        let time = hours + ":" + minutes;
 
         let user = req.session.user;
         let licht = req.body.ledname;

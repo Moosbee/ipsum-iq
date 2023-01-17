@@ -39,10 +39,10 @@ const Querylist = () => {
                     <thead>
                     <tr>
                         <th>Benutzer</th>
-                        <th>Zeitpunkt</th>
                         <th>Datum</th>
-                        <th>Status</th>
+                        <th>Zeitpunkt</th>
                         <th>Licht</th>
+                        <th>Status</th>
                     </tr>
                     </thead>
                     
@@ -53,10 +53,10 @@ const Querylist = () => {
                                 <tbody  className="odd:bg-gray-300 even:bg-white">
                                 <tr>
                                     <td>{entry.user}</td>
-                                    <td>{entry.Zeitpunkt}</td>
                                     <td>{entry.Datum}</td>
-                                    <td>{entry.Status}</td>
+                                    <td>{entry.Zeitpunkt}</td>
                                     <td>{entry.Licht}</td>
+                                    <td>{entry.Status}</td>
                                    
                                 </tr>
                                 </tbody>
