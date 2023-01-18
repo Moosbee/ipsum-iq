@@ -63,7 +63,7 @@ app.use(cors({
 
 app.get('/entries', async (req, res) => {
 
-    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC;");
+    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
 
     if (req.session.user) {
         if (req.session.user == "admin") {
@@ -105,7 +105,7 @@ app.post('/entries', async (req, res) => {
         let seconds = date_ob.getSeconds();
 
         let date = day + "-" + month + "-" + year;
-        let time = hours + ":" + minutes + ":" + seconds;
+        let time = hours + ":" + minutes;
 
         let user = req.session.user;
         let licht = req.body.ledname;
@@ -295,7 +295,7 @@ wss.on('connection', ws => {
 IO.on('connection', (socket) => {
 
     console.log('a user connected');
-
+    
     socket.on("test_message", (data) => {
         console.log("THIS IS THE DATA: " + data.message);
       })

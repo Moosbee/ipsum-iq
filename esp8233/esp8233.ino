@@ -16,7 +16,7 @@
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
-#define DEBUG 1
+#define DEBUG 0
 // debug/debugln for debugging
 #if DEBUG == 1
 #define debug(x) Serial.print(x)
@@ -25,6 +25,14 @@
 #define debug(x)
 #define debugln(x)
 #endif
+
+// https://forum.arduino.cc/t/detecting-falling-and-rising-edges/291011/3
+
+// macro for detection af rasing edge
+#define RE(signal, state) (state = (state << 1) | (signal & 1) & 3) == 1
+
+// macro for detection af falling edge
+#define FE(signal, state) (state = (state << 1) | (signal & 1) & 3) == 2
 
 // #ifndef STASSID
 // #define STASSID "htlwlan"
@@ -38,14 +46,14 @@
 // char *password = STAPSK;
 
 bool ledState = false;
-const int ledPin = LED_BUILTIN;
+const int ledPin = 0;
 
 bool btnState = false;
 const int btnPin = 2;
 
 bool resetState = false;
-const int resetPin = 2;
-int resetTimer = 0;
+const int resetPin = 1;
+unsigned long zeitResetPin = 0;
 
 unsigned long zeit2 = 0;
 char jsonResp[] = "{!status!:?}";
@@ -67,7 +75,8 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-void setLED(bool newState) {
+void setLED(bool newState)
+{
   ledState = newState;
   jsonResp[10] = 48 + ledState;
   digitalWrite(ledPin, !ledState);
@@ -76,80 +85,91 @@ void setLED(bool newState) {
   debugln(ledState);
 }
 
-void handleWebSocketMessage(uint8_t* data, size_t len) {
+void handleWebSocketMessage(uint8_t *data, size_t len)
+{
 
   data[len] = 0;
-  if (strcmp((char*)data, "toggle") == 0) {
+  if (strcmp((char *)data, "toggle") == 0)
+  {
     setLED(!ledState);
   }
-  else if (strcmp((char*)data, "on") == 0) {
+  else if (strcmp((char *)data, "on") == 0)
+  {
     setLED(true);
   }
-  else if (strcmp((char*)data, "off") == 0) {
+  else if (strcmp((char *)data, "off") == 0)
+  {
     setLED(false);
   }
 }
 
-void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
+void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
+{
 
-  switch (type) {
-    case WStype_DISCONNECTED:
-      debugln("[WSc] Disconnected!");
-      break;
-    case WStype_CONNECTED:
-      {
-        debugln("[WSc] Connected");
+  switch (type)
+  {
+  case WStype_DISCONNECTED:
+    debugln("[WSc] Disconnected!");
+    break;
+  case WStype_CONNECTED:
+  {
+    debugln("[WSc] Connected");
 
-        // send message to server when Connected
-        webSocket.sendTXT("Connected");
-      }
-      break;
-    case WStype_TEXT:
+    // send message to server when Connected
+    webSocket.sendTXT("Connected");
+  }
+  break;
+  case WStype_TEXT:
 #if DEBUG == 1
-      Serial.printf("[WSc] get text: %s\n", payload);
+    Serial.printf("[WSc] get text: %s\n", payload);
 #endif
-      handleWebSocketMessage(payload, length);
-      // send message to server
-      // webSocket.sendTXT("message here");
-      break;
-    case WStype_BIN:
-      debug("[WSc] get binary length:");
-      debugln(length);
+    handleWebSocketMessage(payload, length);
+    // send message to server
+    // webSocket.sendTXT("message here");
+    break;
+  case WStype_BIN:
+    debug("[WSc] get binary length:");
+    debugln(length);
 #if DEBUG == 1
-      hexdump(payload, length);
+    hexdump(payload, length);
 #endif
-      // send data to server
-      // webSocket.sendBIN(payload, length);
-      break;
-    case WStype_PING:
-      // pong will be send automatically
-      debugln("[WSc] get ping");
-      break;
-    case WStype_PONG:
-      // answer to a ping we send
-      debugln("[WSc] get pong");
-      break;
+    // send data to server
+    // webSocket.sendBIN(payload, length);
+    break;
+  case WStype_PING:
+    // pong will be send automatically
+    debugln("[WSc] get ping");
+    break;
+  case WStype_PONG:
+    // answer to a ping we send
+    debugln("[WSc] get pong");
+    break;
   }
 }
 
-void handleStatus() {
+void handleStatus()
+{
   server.send(200, "text/plain", jsonResp);
 }
-void handleToggle() {
+void handleToggle()
+{
   setLED(!ledState);
   server.send(200, "text/plain", jsonResp);
 }
-void handleToggleOn() {
+void handleToggleOn()
+{
   setLED(true);
   server.send(200, "text/plain", jsonResp);
 }
-void handleToggleOff() {
+void handleToggleOff()
+{
   setLED(false);
   server.send(200, "text/plain", jsonResp);
 }
 
 // AdvancedWebServer.ino
-void handleNotFound() {
+void handleNotFound()
+{
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -159,16 +179,31 @@ void handleNotFound() {
   message += server.args();
   message += "\n";
 
-  for (uint8_t i = 0; i < server.args(); i++) {
+  for (uint8_t i = 0; i < server.args(); i++)
+  {
     message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
   }
 
   server.send(404, "text/plain", message);
 }
 
+// callback notifying us of the need to save config
+void saveConfigCallback()
+{
+  debugln("Should save config");
+  shouldSaveConfig = true;
+}
 
-void resetESP() {
+void rebootESP()
+{
+  debugln("Rebooting");
+  ESP.restart();
+}
 
+void resetESP()
+{
+
+  debugln("Resetting");
   // reset settings - wipe stored credentials for testing
   // these are stored by the esp library
   wifiManager.resetSettings();
@@ -178,16 +213,19 @@ void resetESP() {
 
 const int offset = 50;
 
-void loadConfigFromEEPROM() {
+void loadConfigFromEEPROM()
+{
   EEPROM.begin(128);
   debugln("Start load from EEPROM");
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 40; i++)
+  {
     byte readByte = EEPROM.read(i + offset);
     debugln(readByte);
     websocket_server[i] = readByte;
   }
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++)
+  {
     byte readByte = EEPROM.read(i + 50 + offset);
     debugln(readByte);
     websocket_port[i] = readByte;
@@ -199,16 +237,19 @@ void loadConfigFromEEPROM() {
   debugln("Finish load from EEPROM");
 }
 
-void saveConfigToEEPROM() {
+void saveConfigToEEPROM()
+{
   EEPROM.begin(128);
   debugln("Start saving from EEPROM");
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 40; i++)
+  {
     byte writeByte = websocket_server[i];
     debugln(writeByte);
     EEPROM.write(i + offset, writeByte);
   }
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++)
+  {
     byte writeByte = websocket_port[i];
     debugln(writeByte);
     EEPROM.write(i + 50 + offset, writeByte);
@@ -217,17 +258,22 @@ void saveConfigToEEPROM() {
   debugln("Finish saving from EEPROM");
 }
 
-void setup() {
-  // Serial port for debugging purposes
+void setup()
+{
+  // Serial port for debugging purposes only
+#if DEBUG == 1
   delay(1000);
   Serial.begin(115200);
+#endif
   delay(1000);
 
   // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // it is a good practice to make sure your code sets wifi mode how you want it.
 
-
   delay(500);
+
+  pinMode(btnPin, INPUT_PULLUP);
+  pinMode(resetPin, INPUT_PULLUP);
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW); // Turn the LED on (Note that LOW is the voltage level
@@ -239,14 +285,42 @@ void setup() {
 
   debugln("Starting...");
 
+  loadConfigFromEEPROM();
+
+  wifiManager.setConfigPortalTimeout(180);
+
+  // id/name, placeholder/prompt, default, length
+  WiFiManagerParameter custom_websocket_server("server", "websocket server", websocket_server, 40);
+
+  // id/name, placeholder/prompt, default, length
+  WiFiManagerParameter custom_websocket_port("port", "websocket port", websocket_port, 6);
+
+  wifiManager.addParameter(&custom_websocket_server);
+  wifiManager.addParameter(&custom_websocket_port);
+
+  wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+  wifiManager.setCustomHeadElement("<style>html{color:lightgreen;}</style>");
+
   // Connect to Wi-Fi
   wifiManager.autoConnect("IPSUMIQ", "IQ-ESP8233");
 
   // Print ESP Local IP Address
-  // debugln(WiFi.localIP());
+  debugln(WiFi.localIP());
   digitalWrite(ledPin, HIGH);
   delay(1000);
   digitalWrite(ledPin, ledState);
+
+  if (shouldSaveConfig)
+  {
+    strcpy(websocket_server, custom_websocket_server.getValue());
+    strcpy(websocket_port, custom_websocket_port.getValue());
+    saveConfigToEEPROM();
+  }
+
+  debugln("The values in the file are: ");
+  debugln(websocket_server);
+  debugln(websocket_port);
 
   // Route for root / web page
   // server.on("/",handleRoot); //Not needed
@@ -258,6 +332,10 @@ void setup() {
   server.on("/toggle/off", handleToggleOff);
 
   server.on("/toggle", handleToggle);
+
+  server.on("/reset", resetESP);
+
+  server.on("/reboot", rebootESP);
 
   server.onNotFound(handleNotFound);
 
@@ -274,12 +352,27 @@ void setup() {
   server.begin();
 }
 
-void loop() {
+void loop()
+{
   webSocket.loop();
   server.handleClient();
   unsigned long zeit1 = millis();
-  if (zeit2 <= zeit1) {
+  if (zeit2 <= zeit1)
+  {
     zeit2 = zeit1 + 5000;
     webSocket.sendTXT(jsonResp);
+  }
+  if (digitalRead(resetPin))
+  {
+    zeitResetPin = zeit1;
+  }
+  if ((zeit1 - 5000) > zeitResetPin)
+  {
+    resetESP();
+  }
+  if (RE(digitalRead(btnPin), btnState))
+  {
+    // code here gets executed on raising edge of btn
+    setLED(!ledState);
   }
 }
