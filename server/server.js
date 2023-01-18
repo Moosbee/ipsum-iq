@@ -81,7 +81,6 @@ app.get('/entries', async (req, res) => {
 
 app.post('/entries', async (req, res) => {
 
-    
     if (req.session.user) {
 
         console.log("USER: " + req.session.user);
@@ -254,6 +253,18 @@ app.post('/login', async (req, res) => {
 
 });
 
+
+app.post('/logout', (req, res) => {
+
+    if(req.session.user) {
+        req.session.destroy(() => {
+            res.send({LoggedOut: true});
+        })
+    }
+    else {
+        
+    }
+});
 
 //Websocket Server -> ESP Code
 
