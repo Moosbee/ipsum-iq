@@ -11,12 +11,24 @@ const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
 const wss = new Websocket.Server({ port: 8080 });
-const IO = new Server(server);
+const IO = new Server(server, {
+    cors: {
+        origin:["http://localhost:3000", "ws://localhost:3000"]
 
+    }
+});
 
 let led1state = false;
 let led2state = false;
-let testbool = false;
+
+let ESPArray = [{
+    name: "ESP1",
+    on: led1state
+},
+{
+    name:"ESP2",
+    on: led2state
+}]
 
 const mysql = require('mysql2/promise');
 const { client } = require('websocket');
@@ -50,7 +62,7 @@ app.use(cors({
 
 app.get('/entries', async (req, res) => {
 
-    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege;");
+    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
 
     if (req.session.user) {
         if (req.session.user == "admin") {
@@ -92,21 +104,30 @@ app.post('/entries', async (req, res) => {
         let seconds = date_ob.getSeconds();
 
         let date = day + "-" + month + "-" + year;
-        let time = hours + ":" + minutes + ":" + seconds;
+        let time = hours + ":" + minutes;
 
         let user = req.session.user;
-        let licht = 1;
+        let licht = req.body.ledname;
         let status;
 
-        if (led1state == false) {
-            status = "an";
-            led1state = true;
-        }
-        else if (led1state) {
-            status = "aus";
-            led1state = false;
-        }
+    
+        for(let i = 0; i < ESPArray.length; i++) {
 
+            if(req.body.ledname == ESPArray[i].name) {
+
+                ESPArray[i].on = !ESPArray[i].on
+
+                if(ESPArray[i].on) {
+                    status = "an";
+                    
+                }
+                else if(ESPArray[i].on == false) {
+                    status = "aus";
+                }   
+               
+            }
+        }
+        
 
         console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
 
@@ -124,9 +145,19 @@ app.post('/entries', async (req, res) => {
 app.post('/state', (req, res) => {
 
     if (req.session.user) {
-        res.send({ ledState: led1state, LoggedIn: true });
+        if(req.body.ledname == "ESP1") {
+            led1state = !led1state
+            console.log("DEINE MUTTER LED1" + led1state)
+        }
+        else if (req.body.ledname == "ESP2") {
+            led2state = !led2state
+            console.log("DEINE MUTTER LED2 " + led2state)
+
+            
+        }
     }
     else {
+
         res.send({ LoggedIn: false });
     }
 
@@ -226,7 +257,7 @@ app.post('/login', async (req, res) => {
 //Websocket Server -> ESP Code
 
 wss.on('connection', ws => {
-
+    console.log("Client connected");
 
     ws.on('message', message => {
         // if (message.type === "utf8") {
@@ -236,6 +267,7 @@ wss.on('connection', ws => {
             if (message == "0") {
                 led1state = false;
                 console.log(led1state);
+                
                 
             }
             else if (message == "1") {
@@ -249,20 +281,31 @@ wss.on('connection', ws => {
 
         });
 
-   
-        ws.send("Connected to server");    
+        ws.send("toggle")
+            
 
+    ws.on("close", () => {
+        console.log("Client disconnected");
+    })
 })
 
 //SocketIo Server zu Frontend Code
 
 IO.on('connection', (socket) => {
-    console.log('a user connected: ' + socket.id);
 
-    socket.emit("Test");
+    console.log('a user connected');
+    
+    socket.on("test_message", (data) => {
+        console.log("THIS IS THE DATA: " + data.message);
+      })
+
+    
+    socket.emit("ledstate", {Message: ESPArray});
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
+
 });
 
 
