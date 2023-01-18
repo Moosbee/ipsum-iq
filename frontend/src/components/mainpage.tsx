@@ -134,15 +134,17 @@ const Mainpage = () => {
                   Pricing
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
-                >
-                  Contact
-                </a>
-              </li>
+              <div className="grid">
+              <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-1.5 sm:w-full w-10/12 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
+              bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
+              dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
+               
+                Log out
+              
+              </button>
+              </div>
             </ul>
+            
           </div>
         </div>
       </nav>

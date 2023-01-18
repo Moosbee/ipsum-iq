@@ -32,43 +32,64 @@ const Querylist = () => {
     return (
 
         <>
-
-            <div className='flex justify-center'>
-
-                <table className='rounded-lg bg-white'>
-                    <thead>
-                    <tr>
-                        <th>Benutzer</th>
-                        <th>Zeitpunkt</th>
-                        <th>Datum</th>
-                        <th>Status</th>
-                        <th>Licht</th>
-                    </tr>
-                    </thead>
-                    
+            <div className='text-center mt-1'>
+            
+                
+            <div className="flex justify-center">
+    <table className=" md:w-9/12 w-11/12 text-sm text-gray-500 dark:text-gray-400">
+        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+                <th scope="col" className="md:px-6 px-2 py-3 text-center border-r-2 border-gray-400 border-b-2">
+                Benutzer
+                </th>
+                <th scope="col" className="md:px-6 px-2 py-3 text-center border-r-2 border-gray-400 border-b-2" >
+                Datum
+                </th>
+                <th scope="col" className="md:px-6 px-2 py-3 text-center border-r-2 border-gray-400 border-b-2">
+                Zeitpunkt
+                </th>
+                <th scope="col" className="md:px-6 px-2 py-3 text-center border-r-2 border-gray-400 border-b-2">
+                Licht
+                </th>
+                <th scope="col" className="md:px-6 px-2 py-3 text-center border-gray-400 border-b-2">
+                Status
+                </th>
+            </tr>
+        </thead>
+ 
+           
                         {
                             querys[0]?.map((entry: any, index: any) => 
                                
                                 <>
-                                <tbody  className="odd:bg-gray-300 even:bg-white">
-                                <tr>
-                                    <td>{entry.user}</td>
-                                    <td>{entry.Zeitpunkt}</td>
-                                    <td>{entry.Datum}</td>
-                                    <td>{entry.Status}</td>
-                                    <td>{entry.Licht}</td>
+                                <tbody  className="even:bg-gray-300 odd:bg-white">
+                                <tr className=''>
+                                <td className='text-center border-r-2 border-gray-400'>{entry.user}</td>
+                                    <td className='text-center border-r-2 border-gray-400'>{entry.Datum}</td>
+                                    <td className='text-center border-r-2 border-gray-400'>{entry.Zeitpunkt}</td>
+                                    <td className='text-center border-r-2 border-gray-400'>{entry.Licht}</td>
+                                    <td className='text-center'>{entry.Status}</td>
+                                    
                                    
                                 </tr>
                                 </tbody>
+                               
                                 </>
                                 
 
                         )
                         }
-                        
+                   
+            </table>
+        </div>
+         
                     
-                </table>
+                
+                
             </div>
+            
+            
+
 
 
         </>
