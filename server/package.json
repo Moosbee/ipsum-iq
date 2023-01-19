@@ -4,7 +4,6 @@
   "description": "Entwicklung eines smarten lichtschalters mit webseite",
   "main": "server.js",
   "scripts": {
-    "devStart": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
     "wsStart": "nodemon websocketserver.js"

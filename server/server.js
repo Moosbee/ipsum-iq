@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser")
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
+const url = require('url');
 const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
@@ -62,7 +63,7 @@ app.use(cors({
 
 app.get('/entries', async (req, res) => {
 
-    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC;");
+    let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
 
     if (req.session.user) {
         if (req.session.user == "admin") {
@@ -80,7 +81,6 @@ app.get('/entries', async (req, res) => {
 
 app.post('/entries', async (req, res) => {
 
-    
     if (req.session.user) {
 
         console.log("USER: " + req.session.user);
@@ -254,6 +254,18 @@ app.post('/login', async (req, res) => {
 });
 
 
+app.post('/logout', (req, res) => {
+
+    if(req.session.user) {
+        req.session.destroy(() => {
+            res.send({LoggedOut: true});
+        })
+    }
+    else {
+        
+    }
+});
+
 //Websocket Server -> ESP Code
 
 wss.on('connection', ws => {
@@ -294,7 +306,7 @@ wss.on('connection', ws => {
 IO.on('connection', (socket) => {
 
     console.log('a user connected');
-
+    
     socket.on("test_message", (data) => {
         console.log("THIS IS THE DATA: " + data.message);
       })
