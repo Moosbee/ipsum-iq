@@ -268,8 +268,11 @@ app.post('/logout', (req, res) => {
 
 //Websocket Server -> ESP Code
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+    
     console.log("Client connected");
+    let pathname = url.parse(req.url);
+    console.log(pathname.path)
 
     ws.on('message', message => {
         // if (message.type === "utf8") {
