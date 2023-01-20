@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser")
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
+const url = require('url');
 const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
@@ -80,7 +81,6 @@ app.get('/entries', async (req, res) => {
 
 app.post('/entries', async (req, res) => {
 
-    
     if (req.session.user) {
 
         console.log("USER: " + req.session.user);
@@ -254,23 +254,39 @@ app.post('/login', async (req, res) => {
 });
 
 
+app.post('/logout', (req, res) => {
+
+    if(req.session.user) {
+        req.session.destroy(() => {
+            res.send({LoggedOut: true});
+        })
+    }
+    else {
+        
+    }
+});
+
 //Websocket Server -> ESP Code
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+    
     console.log("Client connected");
+    let pathname = url.parse(req.url);
+    console.log(pathname.path)
 
     ws.on('message', message => {
         // if (message.type === "utf8") {
             console.log("Received Message: " + message);
             // let msg = JSON.parse(message.utf8Data)
+        	JSON.parse(message)
 
-            if (message == "0") {
+            if (message.status == 0) {
                 led1state = false;
                 console.log(led1state);
                 
                 
             }
-            else if (message == "1") {
+            else if (message.status == 1) {
                 led1state = true;
                 console.log(led1state);
                 
