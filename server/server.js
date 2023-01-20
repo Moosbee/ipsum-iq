@@ -278,14 +278,15 @@ wss.on('connection', (ws, req) => {
         // if (message.type === "utf8") {
             console.log("Received Message: " + message);
             // let msg = JSON.parse(message.utf8Data)
+        	JSON.parse(message)
 
-            if (message == "0") {
+            if (message.status == 0) {
                 led1state = false;
                 console.log(led1state);
                 
                 
             }
-            else if (message == "1") {
+            else if (message.status == 1) {
                 led1state = true;
                 console.log(led1state);
                 
