@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
 
+
 const Querylist = () => {
 
     const names = ["Moruk", "el", "Ehemst"];
@@ -32,12 +33,12 @@ const Querylist = () => {
     return (
 
         <>
-            <div className='text-center mt-1'>
+            <div className='mt-1'>
             
                 
             <div className="flex justify-center">
-    <table className=" md:w-9/12 w-11/12 text-sm text-gray-500 dark:text-gray-400">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+    <table className=" md:w-9/12 w-11/12 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 rounded-t-md rounded-b-md">
+        <thead className="text-xs sm:text-base">
             <tr>
                 <th scope="col" className="md:px-6 px-2 py-3 text-center border-r-2 border-gray-400 border-b-2">
                 Benutzer
@@ -57,12 +58,12 @@ const Querylist = () => {
             </tr>
         </thead>
  
-           
+                
                         {
                             querys[0]?.map((entry: any, index: any) => 
                                
                                 <>
-                                <tbody  className="even:bg-gray-300 odd:bg-white">
+                                <tbody  className="odd:bg-gray-300 ">
                                 <tr className=''>
                                 <td className='text-center border-r-2 border-gray-400'>{entry.user}</td>
                                     <td className='text-center border-r-2 border-gray-400'>{entry.Datum}</td>
@@ -73,7 +74,9 @@ const Querylist = () => {
                                    
                                 </tr>
                                 </tbody>
+                             
                                
+                          
                                 </>
                                 
 
@@ -86,9 +89,11 @@ const Querylist = () => {
                     
                 
                 
+            
             </div>
-            
-            
+
+
+
 
 
 
