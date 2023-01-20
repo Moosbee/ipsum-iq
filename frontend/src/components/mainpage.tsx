@@ -18,7 +18,7 @@ const Mainpage = () => {
     socket.on("ledstate", (data) => {
 
       console.log(data);
-      let test = data.Message
+      let test = data.Message;
       lighttoggle(test);
 
     })
@@ -30,13 +30,14 @@ const Mainpage = () => {
   };
 
   const testbulb = (name:string) => {
-    const newlightstate=lightstate.map((light)=>{
-      if(light.name==name){
-        light.on=!light.on;
-      }
-      return light;
-    })
-    lighttoggle(newlightstate);
+    // const newlightstate = 
+    // lightstate.map((light)=>{
+    //   if(light.name == name){
+    //     light.on = !light.on;
+    //   }
+    //   return light;
+    // })
+    // lighttoggle(newlightstate);
   };
 
   Axios.defaults.withCredentials = true;
@@ -74,7 +75,7 @@ const Mainpage = () => {
     Axios.post("http://localhost:3001/state", {ledname: name}).then((Response) => {
 
       if (Response.data.LoggedIn) {
-
+        
       } 
 
       else if (!Response.data.LoggedIn) {
