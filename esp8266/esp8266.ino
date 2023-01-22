@@ -1,5 +1,6 @@
 
 // https://tttapa.github.io/ESP8266/Chap01%20-%20ESP8266.html
+// https://elektro.turanis.de/html/prj299/index.html
 // https://github.com/me-no-dev/ESPAsyncWebServer/
 // https://randomnerdtutorials.com/esp8266-nodemcu-websocket-server-arduino/
 // https://github.com/Links2004/arduinoWebSockets
@@ -70,7 +71,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 void setLED(bool newState) {
   ledState = newState;
   jsonResp[10] = 48 + ledState;
-  digitalWrite(ledPin, !ledState);
+  digitalWrite(ledPin, ledState);
   webSocket.sendTXT(jsonResp);
   debug("State: ");
   debugln(ledState);
@@ -353,7 +354,7 @@ void loop() {
   if ((zeit1 - 5000) > zeitResetPin) {
     resetESP();
   }
-  if (!btnState && btnState != digitalRead(btnPin)) {
+  if (btnState && btnState != digitalRead(btnPin)) {
     // code here gets executed on raising edge of btn
     setLED(!ledState);
   }
