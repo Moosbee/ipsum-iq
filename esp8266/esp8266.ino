@@ -17,7 +17,9 @@
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
-#define DEBUG 0
+
+
+#define DEBUG 1
 // debug/debugln for debugging
 #if DEBUG == 1
 #define debug(x) Serial.print(x)
@@ -26,6 +28,8 @@
 #define debug(x)
 #define debugln(x)
 #endif
+
+
 
 // #ifndef STASSID
 // #define STASSID "htlwlan"
@@ -61,12 +65,6 @@ WiFiManager wifiManager;
 // Create AsyncWebServer object on port 80
 ESP8266WebServer server(80);
 WebSocketsClient webSocket;
-
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html lang="en">
-</html>
-)rawliteral";
 
 void setLED(bool newState) {
   ledState = newState;
