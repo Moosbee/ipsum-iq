@@ -63,6 +63,31 @@ app.use(cors({
     credentials: true
 }));
 
+
+
+app.post('/time', (req, res) => {
+
+    if(req.session.user) {
+        if(req.body.time > 0) {
+
+            setTimeout(() => {
+                ws.send("off")
+            }, req.body.time);
+            res.send({LoggedIn: true});
+        }
+        else {
+            res.status(500).send("Invalid Time");
+        }
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+    
+   
+});
+
+
+
 app.get('/entries', async (req, res) => {
 
     let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
