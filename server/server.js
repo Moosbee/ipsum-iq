@@ -24,9 +24,7 @@ let led2state = false;
 
 let ESPArray = () => {
     let ESPArray = [];
-    console.log("test + " + wss.clients);
     wss.clients.forEach(ws => {
-        console.log("WOS OPEN " + ws.CLOSED);
         if(ws.isAlive) {
             ESPArray.push({ name: ws.id, on: ws.status });
         }
@@ -65,6 +63,31 @@ app.use(cors({
     credentials: true
 }));
 
+
+
+app.post('/time', (req, res) => {
+
+    if(req.session.user) {
+        if(req.body.time > 0) {
+
+            setTimeout(() => {
+                ws.send("off")
+            }, req.body.time);
+            res.send({LoggedIn: true});
+        }
+        else {
+            res.status(500).send("Invalid Time");
+        }
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+    
+   
+});
+
+
+
 app.get('/entries', async (req, res) => {
 
     let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
@@ -84,10 +107,8 @@ app.get('/entries', async (req, res) => {
 });
 
 app.post('/entries', async (req, res) => {
-    console.log("Entries")
     if (req.session.user) {
 
-        console.log("USER: " + req.session.user);
         let date_ob = new Date();
 
         let day = ("0" + date_ob.getDate()).slice(-2);
@@ -133,9 +154,6 @@ app.post('/entries', async (req, res) => {
             }
         }
 
-
-        console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
-
         const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
         // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
         (await connection).query(InsertQuery);
@@ -150,7 +168,6 @@ app.post('/entries', async (req, res) => {
 });
 
 app.post('/state', (req, res) => {
-    console.log("State")
     if (req.session.user) {
         let name = req.body.ledname;
 
@@ -226,8 +243,6 @@ app.post('/users', async (req, res) => {
 //Login Code
 app.post('/login', async (req, res) => {
 
-    console.log(req.body);
-
     let an = await (await connection).query("SELECT username, password FROM user");
     let isAdmin = req.body.name === an[0][0].username;
     let isAdminPassword = await bcrypt.compare(req.body.password, an[0][0].password);
@@ -240,7 +255,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][0].username;
             res.send({ message: req.session.user });
             console.log("Admin Cookie set");
-            console.log(req.session.user);
+            
         }
 
         else if (isUser && isUserPassword) {
@@ -248,7 +263,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][1].username;
             res.send({ message: req.session.user });
             console.log("User Cookie set");
-            console.log(req.session.user);
+            
         }
 
         else {
@@ -355,17 +370,13 @@ const interval = setInterval(function ping() {
     clearInterval(interval);
     IO.emit("ledstate", { Message: ESPArray() });
 })
+
 //SocketIo Server zu Frontend Code
 
 IO.on('connection', (socket) => {
 
     console.log('a user connected');
 
-    socket.on("test_message", (data) => {
-        console.log("THIS IS THE DATA: " + data.message);
-    })
-
-    
     socket.emit("ledstate", { Message: ESPArray() });
 
     socket.on('disconnect', () => {
@@ -373,7 +384,6 @@ IO.on('connection', (socket) => {
     });
 
 });
-
 
 
 server.listen(3001, () => {

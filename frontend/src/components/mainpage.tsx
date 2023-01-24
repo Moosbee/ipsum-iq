@@ -8,13 +8,14 @@ const Mainpage = () => {
 
 
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([]);
+  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
+  const [time, settime] = useState(0);
   const navigate = useNavigate();
   const Light = false;
- 
+
   const ws = () => {
     const socket = io("ws://localhost:3001");
-    
+
     socket.on("ledstate", (data) => {
 
       console.log(data);
@@ -22,14 +23,14 @@ const Mainpage = () => {
       lighttoggle(test);
 
     })
-    
+
   }
 
-  const mobileMenu = () => { 
+  const mobileMenu = () => {
     setActive(!isActive);
   };
 
-  const testbulb = (name:string) => {
+  const testbulb = (name: string) => {
     // const newlightstate = 
     // lightstate.map((light)=>{
     //   if(light.name == name){
@@ -43,7 +44,7 @@ const Mainpage = () => {
   Axios.defaults.withCredentials = true;
 
   useEffect(() => {
-    
+
     Axios.get("http://localhost:3001/Mainpage").then((Response) => {
       if (Response.data.LoggedIn) {
         console.log("LOGGED IN");
@@ -55,15 +56,15 @@ const Mainpage = () => {
     });
 
     ws();
-    
+
   }, []);
 
   function InsertIntoDB(name: string) {
-    Axios.post("http://localhost:3001/entries", {ledname: name}).then((Response) => {
+    Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
-      } 
+      }
       else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
         navigate("/");
@@ -72,11 +73,11 @@ const Mainpage = () => {
   }
 
   function SetLightStatus(name: string) {
-    Axios.post("http://localhost:3001/state", {ledname: name}).then((Response) => {
+    Axios.post("http://localhost:3001/state", { ledname: name }).then((Response) => {
 
       if (Response.data.LoggedIn) {
-        
-      } 
+
+      }
 
       else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
@@ -88,14 +89,21 @@ const Mainpage = () => {
   function Logout() {
     Axios.post("http://localhost:3001/logout").then((Response) => {
 
-      if(Response.data.LoggedOut == true) {
+      if (Response.data.LoggedOut == true) {
 
         navigate("/");
-      
+
       }
     });
   }
 
+  function setTime(time: number, ESP: string) {
+    Axios.post("http://localhost:3001/time", {ledtime: time, ESPName: ESP}).then((Response) => {
+
+     
+
+    })
+  }
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen max-h-full">
       <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 rounded">
@@ -170,51 +178,51 @@ const Mainpage = () => {
                 </a>
               </li>
               <div className="grid">
-              <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-1.5 sm:w-full w-10/12 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
+                <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-1.5 sm:w-full w-10/12 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
               bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
-              dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800" onClick={()=> {Logout();}}>
-               
-                Log out
-              
-              </button>
+              dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800" onClick={() => { Logout(); }}>
+
+                  Log out
+
+                </button>
               </div>
             </ul>
-            
+
           </div>
         </div>
       </nav>
 
       <div className="grid mt-2 grod-cols-1 sm:grid-cols-2 sm:gap-x-2 gap-y-3 grid-flow-row-dense ">
-            {lightstate.map((light)=>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
-              <div className="grid grid-cols-4">
-            <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
-              <img
-                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
-                id="bulbbnt"
-                alt=""
-              />
+        {lightstate.map((light) =>
+          <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
+            <div className="grid grid-cols-4">
+              <button type="button" onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}>
+                <img
+                  src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
+                  id="bulbbnt"
+                  alt=""
+                />
+              </button>
+            </div>
+            <button
+              onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}
+              id="btn1"
+              className={light.on ? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed" : "p-8 bg-red-600"}
+              disabled={light.on ? true : false}>
+              Turn On
+            </button>
+
+            <button
+              onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}
+              id="btn2"
+              className={light.on ? "p-8 bg-red-600 " : "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
+              disabled={light.on ? false : true}>
+              Turn off
             </button>
           </div>
-          <button
-            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
-            id="btn1"
-            className={light.on? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed": "p-8 bg-red-600"}
-            disabled={light.on ? true : false}>
-            Turn On
-          </button>
 
-           <button
-            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
-            id="btn2"
-            className={light.on? "p-8 bg-red-600 ": "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
-            disabled={light.on ? false : true}>
-            Turn off
-          </button>
-        </div>
-              
-            )}
-         
+        )}
+
       </div>
 
       {/* hover und click animation und obstond */}
