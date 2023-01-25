@@ -33,8 +33,8 @@ let ESPArray = () => {
     return ESPArray;
 }
 
+
 const mysql = require('mysql2/promise');
-const { client } = require('websocket');
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -43,6 +43,7 @@ const connInfo = {
     connectionLimit: 10
 }
 const connection = mysql.createConnection(connInfo);
+
 
 app.use(session({
     secret: 'secretkey',
