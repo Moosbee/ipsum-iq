@@ -363,7 +363,7 @@ const interval = setInterval(function ping() {
       ws.ping();
     });
 
-  }, 30000);
+  }, 30000 * 2 * 5);
 
   
   wss.on("close", function close() {
