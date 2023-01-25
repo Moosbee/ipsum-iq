@@ -74,6 +74,7 @@ app.post('/time', (req, res) => {
             setTimeout(() => {
                 ws.send("off")
             }, req.body.time);
+            
             res.send({LoggedIn: true});
         }
         else {
@@ -87,7 +88,17 @@ app.post('/time', (req, res) => {
    
 });
 
+app.post("/clear", async (req, res) => {
 
+    if(req.session.user) {
+        let query = "DELETE FROM eintraege;"
+        (await connection).query(query);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+});
 
 app.get('/entries', async (req, res) => {
 
