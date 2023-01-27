@@ -2,17 +2,22 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+import Timer from "./timer";
+
 
 
 const Mainpage = () => {
 
   const [isActive, setActive] = useState<boolean | undefined>(false);
   const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
-  const [hours, sethours] = useState(0);
-  const [minutes, setminutes] = useState(0);
+  const [hours, sethours] = useState(5);
+  const [minutes, setminutes] = useState(6);
+  const [seconds, setseconds] = useState(9);
 
   const navigate = useNavigate();
   const Light = false;
+  let timer: any;
 
   const ws = () => {
     const socket = io("ws://localhost:3001");
@@ -45,8 +50,30 @@ const Mainpage = () => {
     });
 
     ws();
-
+    if(hours < 0) {
+      
+    }
+    
   }, []);
+
+  timer = setInterval(() => {
+
+    setseconds(seconds - 1);
+  
+    if(seconds === 0) {
+      setseconds(59)
+      setminutes(minutes-1)
+
+    }
+
+    if(minutes === 0) {
+      setminutes(59)
+      sethours(hours - 1);
+    }
+    
+  }, 1000)
+
+  
 
   function InsertIntoDB(name: string) {
     Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
@@ -91,7 +118,7 @@ const Mainpage = () => {
 
 
 
-    })
+    });
   }
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen max-h-full">
@@ -233,6 +260,9 @@ const Mainpage = () => {
             />
           </svg>
         </button>
+
+        <Timer hours={hours} minutes={minutes} seconds={seconds}></Timer>
+         
       </div>
     </div>
   );
