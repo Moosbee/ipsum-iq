@@ -6,10 +6,11 @@ import { io } from "socket.io-client";
 
 const Mainpage = () => {
 
-
   const [isActive, setActive] = useState<boolean | undefined>(false);
   const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
-  const [time, settime] = useState(0);
+  const [hours, sethours] = useState(0);
+  const [minutes, setminutes] = useState(0);
+
   const navigate = useNavigate();
   const Light = false;
 
@@ -22,23 +23,11 @@ const Mainpage = () => {
       let test = data.Message;
       lighttoggle(test);
 
-    })
-
+    });
   }
-
+  
   const mobileMenu = () => {
     setActive(!isActive);
-  };
-
-  const testbulb = (name: string) => {
-    // const newlightstate = 
-    // lightstate.map((light)=>{
-    //   if(light.name == name){
-    //     light.on = !light.on;
-    //   }
-    //   return light;
-    // })
-    // lighttoggle(newlightstate);
   };
 
   Axios.defaults.withCredentials = true;
@@ -97,10 +86,10 @@ const Mainpage = () => {
     });
   }
 
-  function setTime(time: number, ESP: string) {
-    Axios.post("http://localhost:3001/time", {ledtime: time, ESPName: ESP}).then((Response) => {
+  function setTime(ESP: string) {
+    Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP}).then((Response) => {
 
-     
+
 
     })
   }
@@ -196,7 +185,7 @@ const Mainpage = () => {
         {lightstate.map((light) =>
           <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
             <div className="grid grid-cols-4">
-              <button type="button" onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}>
+              <button type="button" onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}>
                 <img
                   src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                   id="bulbbnt"
@@ -205,7 +194,7 @@ const Mainpage = () => {
               </button>
             </div>
             <button
-              onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}
+              onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}
               id="btn1"
               className={light.on ? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed" : "p-8 bg-red-600"}
               disabled={light.on ? true : false}>
@@ -213,7 +202,7 @@ const Mainpage = () => {
             </button>
 
             <button
-              onClick={() => { testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name) }}
+              onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}
               id="btn2"
               className={light.on ? "p-8 bg-red-600 " : "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
               disabled={light.on ? false : true}>

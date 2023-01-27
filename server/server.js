@@ -19,8 +19,6 @@ const IO = new Server(server, {
     }
 });
 
-let led1state = false;
-let led2state = false;
 
 let ESPArray = () => {
     let ESPArray = [];
@@ -34,7 +32,7 @@ let ESPArray = () => {
 }
 
 const mysql = require('mysql2/promise');
-const { client } = require('websocket');
+
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -68,25 +66,28 @@ app.use(cors({
 app.post('/time', (req, res) => {
 
     if(req.session.user) {
-        if(req.body.time > 0) {
+        let hours = req.body.ledhours
+        let minutes = req.body.ledminutes
 
-            setTimeout(() => {
-                ws.send("off")
-            }, req.body.time);
-            res.send({LoggedIn: true});
+        let sumHours = hours + minutes/60
+        
+        if(hours > 0 && minutes > 0) {
+            wss.clients.forEach(ws => {
+                if(ws.name == req.body.ESP) {
+                    setTimeout(()=> {
+                        ws.send("off");
+                    }, sumHours * 3600000)
+                }
+            });
         }
         else {
-            res.status(500).send("Invalid Time");
+            res.status(500).send("Invalid Number");
         }
     }
     else {
         res.send({LoggedIn: false});
-    }
-    
-   
+    } 
 });
-
-
 
 app.get('/entries', async (req, res) => {
 
@@ -217,9 +218,6 @@ app.post('/users', async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        console.log(salt);
-        console.log(hashedPassword);
-
         const user = { name: req.body.name, password: hashedPassword };
         const query = `INSERT INTO user (username, password) VALUES ("${user.name}", "${user.password}")`;
         res.status(201).send("Successfully registered");
@@ -234,7 +232,7 @@ app.post('/users', async (req, res) => {
         });
 
     } catch {
-        res.status(500).send("Fatal Error");
+        res.status(500).send("Error");
     }
 
 
@@ -276,7 +274,6 @@ app.post('/login', async (req, res) => {
 
 });
 
-
 app.post('/logout', (req, res) => {
 
     if (req.session.user) {
@@ -290,7 +287,6 @@ app.post('/logout', (req, res) => {
 });
 
 //Websocket Server -> ESP Code
-
 
 function heartbeat () {
     this.isAlive = true;
@@ -343,13 +339,7 @@ wss.on('connection', (ws, req) => {
 
         IO.emit("ledstate", { Message: ESPArray() });
 
-
-
-
     });
-
-
-
 })
 
 const interval = setInterval(function ping() {
