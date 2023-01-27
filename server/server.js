@@ -74,7 +74,7 @@ app.post('/time', (req, res) => {
         
         if(hours > 0 && minutes > 0) {
             wss.clients.forEach(ws => {
-                if(ws.name == req.body.ESP) {
+                if(ws.id == req.body.ESP) {
                     setTimeout(()=> {
                         ws.send("off");
                     }, sumHours * 3600000)
