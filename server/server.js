@@ -31,8 +31,8 @@ let ESPArray = () => {
     return ESPArray;
 }
 
-const mysql = require('mysql2/promise');
 
+const mysql = require('mysql2/promise');
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -41,6 +41,7 @@ const connInfo = {
     connectionLimit: 10
 }
 const connection = mysql.createConnection(connInfo);
+
 
 app.use(session({
     secret: 'secretkey',
@@ -87,6 +88,18 @@ app.post('/time', (req, res) => {
     else {
         res.send({LoggedIn: false});
     } 
+});
+
+app.post("/clear", async (req, res) => {
+
+    if(req.session.user) {
+        let query = "DELETE FROM eintraege;"
+        (await connection).query(query);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
 });
 
 app.get('/entries', async (req, res) => {
