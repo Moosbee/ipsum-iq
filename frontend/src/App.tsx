@@ -7,6 +7,7 @@ import Layout from "./components/layout";
 import Entries from "./components/entries";
 import Querylist from "./components/querylist";
 import About from "./components/about";
+import Timer from "./components/timer";
 
 function App() {
   return (

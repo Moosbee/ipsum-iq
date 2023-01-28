@@ -1,5 +1,6 @@
 
 // https://tttapa.github.io/ESP8266/Chap01%20-%20ESP8266.html
+// https://elektro.turanis.de/html/prj299/index.html
 // https://github.com/me-no-dev/ESPAsyncWebServer/
 // https://randomnerdtutorials.com/esp8266-nodemcu-websocket-server-arduino/
 // https://github.com/Links2004/arduinoWebSockets
@@ -16,7 +17,9 @@
 
 #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
-#define DEBUG 0
+
+
+#define DEBUG 1
 // debug/debugln for debugging
 #if DEBUG == 1
 #define debug(x) Serial.print(x)
@@ -25,6 +28,8 @@
 #define debug(x)
 #define debugln(x)
 #endif
+
+
 
 // #ifndef STASSID
 // #define STASSID "htlwlan"
@@ -61,16 +66,10 @@ WiFiManager wifiManager;
 ESP8266WebServer server(80);
 WebSocketsClient webSocket;
 
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html lang="en">
-</html>
-)rawliteral";
-
 void setLED(bool newState) {
   ledState = newState;
   jsonResp[10] = 48 + ledState;
-  digitalWrite(ledPin, !ledState);
+  digitalWrite(ledPin, ledState);
   webSocket.sendTXT(jsonResp);
   debug("State: ");
   debugln(ledState);
@@ -353,7 +352,7 @@ void loop() {
   if ((zeit1 - 5000) > zeitResetPin) {
     resetESP();
   }
-  if (!btnState && btnState != digitalRead(btnPin)) {
+  if (btnState && btnState != digitalRead(btnPin)) {
     // code here gets executed on raising edge of btn
     setLED(!ledState);
   }

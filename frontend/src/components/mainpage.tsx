@@ -2,47 +2,43 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+import Timer from "./timer";
+
 
 
 const Mainpage = () => {
 
-
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [lightstate, lighttoggle] = useState<{name:string,on:boolean}[]>([]);
+  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
+  const [hours, sethours] = useState(5);
+  const [minutes, setminutes] = useState(6);
+  const [seconds, setseconds] = useState(9);
+
   const navigate = useNavigate();
   const Light = false;
- 
+  let timer: any;
+
   const ws = () => {
     const socket = io("ws://localhost:3001");
-    
+
     socket.on("ledstate", (data) => {
 
       console.log(data);
-      let test = data.Message
+      let test = data.Message;
       lighttoggle(test);
 
-    })
-    
+    });
   }
-
-  const mobileMenu = () => { 
+  
+  const mobileMenu = () => {
     setActive(!isActive);
-  };
-
-  const testbulb = (name:string) => {
-    const newlightstate=lightstate.map((light)=>{
-      if(light.name==name){
-        light.on=!light.on;
-      }
-      return light;
-    })
-    lighttoggle(newlightstate);
   };
 
   Axios.defaults.withCredentials = true;
 
   useEffect(() => {
-    
+
     Axios.get("http://localhost:3001/Mainpage").then((Response) => {
       if (Response.data.LoggedIn) {
         console.log("LOGGED IN");
@@ -54,15 +50,37 @@ const Mainpage = () => {
     });
 
     ws();
+    if(hours < 0) {
+      
+    }
     
   }, []);
 
+  timer = setInterval(() => {
+
+    setseconds(seconds - 1);
+  
+    if(seconds === 0) {
+      setseconds(59)
+      setminutes(minutes-1)
+
+    }
+
+    if(minutes === 0) {
+      setminutes(59)
+      sethours(hours - 1);
+    }
+    
+  }, 1000)
+
+  
+
   function InsertIntoDB(name: string) {
-    Axios.post("http://localhost:3001/entries", {ledname: name}).then((Response) => {
+    Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
-      } 
+      }
       else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
         navigate("/");
@@ -71,11 +89,11 @@ const Mainpage = () => {
   }
 
   function SetLightStatus(name: string) {
-    Axios.post("http://localhost:3001/state", {ledname: name}).then((Response) => {
+    Axios.post("http://localhost:3001/state", { ledname: name }).then((Response) => {
 
       if (Response.data.LoggedIn) {
 
-      } 
+      }
 
       else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
@@ -91,16 +109,23 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
   function Logout() {
     Axios.post("http://localhost:3001/logout").then((Response) => {
 
-      if(Response.data.LoggedOut == true) {
+      if (Response.data.LoggedOut == true) {
 
         navigate("/");
-      
+
       }
     });
   }
   var emailCheck = /^[^a-z][0-9]+$/;
  
 
+  function setTime(ESP: string) {
+    Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP}).then((Response) => {
+
+
+
+    });
+  }
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
       <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
@@ -177,7 +202,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
               </button>
               </div>
             </ul>
-            
+
           </div>
         </div>
       </nav>
@@ -188,7 +213,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
         <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
             <div className="flex justify-between h-full items-center">
               <div className="-mr-6 -ml-2">
-              <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
+              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}>
               <img
                 src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
@@ -230,7 +255,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
           
           <div className="grid col-1 gap-y-3 mr-4">
           <button
-            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn1"
             className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
             : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
@@ -239,7 +264,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
           </button>
 
            <button
-            onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn2"
             className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
             : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}

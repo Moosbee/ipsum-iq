@@ -42,10 +42,15 @@ const Entries = () => {
         });
     }, [querys]);
 
-    function printEntries() {
-        for (let i = 0; i < querys[0].length; i++) {
-            console.log(querys[0][i]);
+    function ClearDB () {
+      Axios.post("http://localhost:3001/clear").then((Response) => {
+        if(Response.data.LoggedIn) {
+          navigate("/entries");
         }
+        else {
+          navigate("/");
+        }
+      })
     }
     function Logout() {
       Axios.post("http://localhost:3001/logout").then((Response) => {
@@ -83,17 +88,25 @@ const Entries = () => {
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          <div
-            className={
-              isActive
+            ></svg>
+              <span className="sr-only">Open main menu</span>
+              
+              <svg
+                className="w-6 h-6"
+                aria-hidden="true"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </button>
+            <div
+              className={isActive
                 ? "mobile-menu w-full md:block md:w-auto"
                 : "hidden mobile-menu w-full md:block md:w-auto"
             }
@@ -149,6 +162,10 @@ const Entries = () => {
       
        
             </div>
+        
+        
+
+
         
     );
 };

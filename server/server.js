@@ -11,29 +11,28 @@ const url = require('url');
 const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
-const wss = new Websocket.Server({ port: 8080 });
+const wss = new Websocket.Server({ port: 8080, clientTracking: true,  });
 const IO = new Server(server, {
     cors: {
-        origin:["http://localhost:3000", "ws://localhost:3000"]
+        origin: ["http://localhost:3000", "ws://localhost:3000"]
 
     }
 });
 
-let led1state = false;
-let led2state = false;
 
-let ESPArray = [{
-    name: "ESP1",
-    on: led1state
-},
+let ESPArray = () => {
+    let ESPArray = [];
+    wss.clients.forEach(ws => {
+        if(ws.isAlive) {
+            ESPArray.push({ name: ws.id, on: ws.status });
+        }
+        
+    })
+    return ESPArray;
+}
 
-{
-    name:"ESP2",
-    on: led2state
-}]
 
 const mysql = require('mysql2/promise');
-const { client } = require('websocket');
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -42,6 +41,7 @@ const connInfo = {
     connectionLimit: 10
 }
 const connection = mysql.createConnection(connInfo);
+
 
 app.use(session({
     secret: 'secretkey',
@@ -62,6 +62,46 @@ app.use(cors({
     credentials: true
 }));
 
+
+
+app.post('/time', (req, res) => {
+
+    if(req.session.user) {
+        let hours = req.body.ledhours
+        let minutes = req.body.ledminutes
+
+        let sumHours = hours + minutes/60
+        
+        if(hours > 0 && minutes > 0) {
+            wss.clients.forEach(ws => {
+                if(ws.id == req.body.ESP) {
+                    setTimeout(()=> {
+                        ws.send("off");
+                    }, sumHours * 3600000)
+                }
+            });
+        }
+        else {
+            res.status(500).send("Invalid Number");
+        }
+    }
+    else {
+        res.send({LoggedIn: false});
+    } 
+});
+
+app.post("/clear", async (req, res) => {
+
+    if(req.session.user) {
+        let query = "DELETE FROM eintraege;"
+        (await connection).query(query);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+});
+
 app.get('/entries', async (req, res) => {
 
     let queryresult = await (await connection).query("SELECT user, Zeitpunkt, Licht, Status, Datum FROM eintraege ORDER BY eintraege_id DESC LIMIT 15;");
@@ -81,10 +121,8 @@ app.get('/entries', async (req, res) => {
 });
 
 app.post('/entries', async (req, res) => {
-
     if (req.session.user) {
 
-        console.log("USER: " + req.session.user);
         let date_ob = new Date();
 
         let day = ("0" + date_ob.getDate()).slice(-2);
@@ -111,51 +149,49 @@ app.post('/entries', async (req, res) => {
         let licht = req.body.ledname;
         let status;
 
-    
-        for(let i = 0; i < ESPArray.length; i++) {
+        let array = ESPArray();
 
-            if(req.body.ledname == ESPArray[i].name) {
+        for (let i = 0; i < array.length; i++) {
 
-                ESPArray[i].on = !ESPArray[i].on
+            if (req.body.ledname == array[i].name) {
 
-                if(ESPArray[i].on) {
+                array[i].on = !array[i].on
+
+                if (array[i].on) {
                     status = "an";
-                    
+
                 }
-                else if(ESPArray[i].on == false) {
+                else if (array[i].on == false) {
                     status = "aus";
-                }   
-               
+                }
+
             }
         }
-        
-
-        console.log("DATUM: " + date + " UHRZEIT: " + time + " USER: " + user[0][0].user_id);
 
         const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
         // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
         (await connection).query(InsertQuery);
 
+        res.send({LoggedIn: true});
+
     }
     else {
         res.send({ LoggedIn: false });
     }
-    
+
 });
 
 app.post('/state', (req, res) => {
-
     if (req.session.user) {
-        if(req.body.ledname == "ESP1") {
-            led1state = !led1state
-            console.log("DEINE MUTTER LED1" + led1state)
-        }
-        else if (req.body.ledname == "ESP2") {
-            led2state = !led2state
-            console.log("DEINE MUTTER LED2 " + led2state)
+        let name = req.body.ledname;
 
-            
-        }
+        wss.clients.forEach(ws => {
+            if(name == ws.id) {
+                ws.send("toggle");
+            }
+        })
+
+        res.send({LoggedIn: true});
     }
     else {
 
@@ -195,9 +231,6 @@ app.post('/users', async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        console.log(salt);
-        console.log(hashedPassword);
-
         const user = { name: req.body.name, password: hashedPassword };
         const query = `INSERT INTO user (username, password) VALUES ("${user.name}", "${user.password}")`;
         res.status(201).send("Successfully registered");
@@ -212,7 +245,7 @@ app.post('/users', async (req, res) => {
         });
 
     } catch {
-        res.status(500).send("Fatal Error");
+        res.status(500).send("Error");
     }
 
 
@@ -233,7 +266,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][0].username;
             res.send({ message: req.session.user });
             console.log("Admin Cookie set");
-            console.log(req.session.user);
+            
         }
 
         else if (isUser && isUserPassword) {
@@ -241,7 +274,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][1].username;
             res.send({ message: req.session.user });
             console.log("User Cookie set");
-            console.log(req.session.user);
+            
         }
 
         else {
@@ -254,12 +287,11 @@ app.post('/login', async (req, res) => {
 
 });
 
-
 app.post('/logout', (req, res) => {
 
-    if(req.session.user) {
+    if (req.session.user) {
         req.session.destroy(() => {
-            res.send({LoggedOut: true});
+            res.send({ LoggedOut: true });
         })
     }
     else {
@@ -269,41 +301,77 @@ app.post('/logout', (req, res) => {
 
 //Websocket Server -> ESP Code
 
+function heartbeat () {
+    this.isAlive = true;
+}
 wss.on('connection', (ws, req) => {
-    
+
     console.log("Client connected");
     let pathname = url.parse(req.url);
-    console.log(pathname.path)
+
+    console.log(pathname.path.substring(1));
+
+    ws.isAlive = true;
+    ws.id = pathname.path.substring(1);
+    ws.status = false;
+
+    IO.emit("ledstate", { Message: ESPArray() });
+    
+    ws.on('pong', heartbeat);
 
     ws.on('message', message => {
         // if (message.type === "utf8") {
-            console.log("Received Message: " + message);
-            // let msg = JSON.parse(message.utf8Data)
-        	JSON.parse(message)
+        console.log("Received Message: " + message);
+        // let msg = JSON.parse(message.utf8Data)
+        let msg;
 
-            if (message.status == 0) {
-                led1state = false;
-                console.log(led1state);
-                
-                
-            }
-            else if (message.status == 1) {
-                led1state = true;
-                console.log(led1state);
-                
-            }
-            else {
-                ws.send("Invalid message");
-            }
 
-        });
+        try {
+            msg = JSON.parse(message)
+        }
+        catch (e) {
+            console.log(e);
+            return
+        }
 
-        ws.send("toggle")
-            
 
-    ws.on("close", () => {
-        console.log("Client disconnected");
-    })
+        if (msg.status == 0) {
+            ws.status = false;
+            console.log("LED1: " + ws.status);
+
+        }
+        else if (msg.status == 1) {
+            ws.status = true;
+            console.log("LED1: " + ws.status);
+
+
+        }
+        else {
+            ws.send("Invalid message");
+        }
+
+        IO.emit("ledstate", { Message: ESPArray() });
+
+    });
+})
+
+const interval = setInterval(function ping() {
+    wss.clients.forEach(function each(ws) {
+      if (ws.isAlive === false) {
+        return ws.terminate();
+    }
+  
+      ws.isAlive = false;
+      ws.ping();
+    });
+
+  }, 30000 * 2 * 5);
+
+  
+  wss.on("close", function close() {
+    console.log("client disconnected");
+    clearInterval(interval);
+    IO.emit("ledstate", { Message: ESPArray() });
 })
 
 //SocketIo Server zu Frontend Code
@@ -311,20 +379,14 @@ wss.on('connection', (ws, req) => {
 IO.on('connection', (socket) => {
 
     console.log('a user connected');
-    
-    socket.on("test_message", (data) => {
-        console.log("THIS IS THE DATA: " + data.message);
-      })
 
-    
-    socket.emit("ledstate", {Message: ESPArray});
+    socket.emit("ledstate", { Message: ESPArray() });
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
 
 });
-
 
 
 server.listen(3001, () => {
