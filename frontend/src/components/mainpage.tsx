@@ -84,6 +84,10 @@ const Mainpage = () => {
     });
   }
 
+
+const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Backspace']
+
+
   function Logout() {
     Axios.post("http://localhost:3001/logout").then((Response) => {
 
@@ -94,15 +98,17 @@ const Mainpage = () => {
       }
     });
   }
+  var emailCheck = /^[^a-z][0-9]+$/;
+ 
 
   return (
-    <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen max-h-full">
-      <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 rounded">
-        <div className="container flex flex-wrap items-center justify-between mx-auto">
-          <a href="Mainpage" className="flex items-center justify-self-start">
+    <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
+      <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
+        <div className="flex flex-wrap items-center justify-between ">
+          <a href="Mainpage" className="">
             <img
-              src="logotest.png"
-              className="h-6 mr-3 sm:h-9"
+              src="logoIpsum.png"
+              className="h-6 sm:h-9"
               alt="Ipsum|IQ Logo"
             />
           </a>
@@ -136,7 +142,7 @@ const Mainpage = () => {
             }
             id="navbar-default"
           >
-            <ul className="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white ">
+            <ul className="flex flex-col p-4 mt-4  sm:-mb-1.5 rounded-lg  md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white">
               <li>
                 <a
                   href="Mainpage"
@@ -154,24 +160,17 @@ const Mainpage = () => {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/About"
                   className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
                 >
-                  Services
+                  About
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "
-                >
-                  Pricing
-                </a>
-              </li>
+             
               <div className="grid">
-              <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-1.5 sm:w-full w-10/12 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
+              <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
               bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
-              dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800" onClick={()=> {Logout();}}>
+              focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={()=> {Logout();}}>
                
                 Log out
               
@@ -182,23 +181,59 @@ const Mainpage = () => {
           </div>
         </div>
       </nav>
-
-      <div className="grid mt-2 grod-cols-1 sm:grid-cols-2 sm:gap-x-2 gap-y-3 grid-flow-row-dense ">
+    <div className="sm:mx-3 mx-2 ">
+    <div className="grid mt-2 grid-cols-1 sm:grid-cols-2 sm:gap-x-3 gap-y-3 grid-flow-row-dense">
             {lightstate.map((light)=>
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px]">
-              <div className="grid grid-cols-4">
-            <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
+            
+        <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
+            <div className="flex justify-between h-full items-center">
+              <div className="-mr-6 -ml-2">
+              <button type="button" onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}>
               <img
                 src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
-                alt=""
-              />
-            </button>
+                alt={light.on ? "bulb_on" : "bulb_off"}
+                className="sm:h-44"
+                />
+              </button>
           </div>
+          <div className="flex  flex-col">
+          <span className="text-xl self-center">{light.name}</span>
+          <form action="flex flex-row">
+          <label className="">
+            <input type="number" placeholder="00" max="23" min="0" id="num" name="num" 
+           onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
+              return  evt.key
+           } else {
+
+            evt.preventDefault()
+           }
+          }}
+          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
+          className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
+            :
+            <input type="number" placeholder="00" max="59" min="1"  id="num2" name="num2" 
+             onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
+              return  evt.key
+           } else {
+
+            evt.preventDefault()
+           }
+          }}
+              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
+              className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
+       
+          </label>
+          <button>butoon</button>
+          </form>
+          </div>
+          
+          <div className="grid col-1 gap-y-3 mr-4">
           <button
             onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn1"
-            className={light.on? "p-8 bg-yellow-300 opacity-50 cursor-not-allowed": "p-8 bg-red-600"}
+            className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
+            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
             disabled={light.on ? true : false}>
             Turn On
           </button>
@@ -206,37 +241,30 @@ const Mainpage = () => {
            <button
             onClick={()=>{testbulb(light.name); SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn2"
-            className={light.on? "p-8 bg-red-600 ": "p-8 bg-yellow-300 cursor-not-allowed opacity-50"}
+            className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
+            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
             disabled={light.on ? false : true}>
             Turn off
           </button>
+          </div>
+          
+          </div>
         </div>
               
             )}
          
       </div>
-
-      {/* hover und click animation und obstond */}
-
-      <div className="flex justify-center mt-5">
-        <button className="cursor-pointer rounded-full bg-gray-400 text-center py-2 px-4 h-14 w-14 inline-flex items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
-        </button>
       </div>
+
+     
+      <div className="flex-grow">
+      </div>
+      <span>logged in as:{}</span>
+      
+      
+       
     </div>
+    
   );
 };
 

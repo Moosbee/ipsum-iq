@@ -1,65 +1,37 @@
-import { Outlet } from 'react-router-dom';
-import Axios from 'axios';
-import { BrowserRouter as Router, Navigate, Route } from "react-router-dom";
-import { useEffect, useState } from 'react';
+import Axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Querylist from './querylist';
+import { io } from "socket.io-client";
 
-const Entries = () => {
-
-    const navigate = useNavigate();
-    Axios.defaults.withCredentials = true;
-    const [querys, setQuerys] = useState<any[]>([]);
-
+const About =() =>  {
     const [isActive, setActive] = useState<boolean | undefined>(false);
-    const mobileMenu = () => {
-      setActive(!isActive);
-    };
-    
-    useEffect(() => {
+    const navigate = useNavigate();
 
-        Axios.get('http://localhost:3001/entries').then((Response) => {
+    const mobileMenu = () => { 
+        setActive(!isActive);
+      };
+      Axios.defaults.withCredentials = true;
 
-
-            if (Response.data.isAdmin || Response.status != 200) {
-                navigate("/Entries");
-            }
-            else if (Response.data.LoggedIn && Response.data.isAdmin == false){
-                navigate("/Mainpage");
-            }
-            else {
-                navigate("/");
-            }
-
-            if (Response.data.result) {
-                setQuerys(Response.data.result);
-            }
-
-            else {
-                console.log("error");
-            }
-
-        });
-    }, [querys]);
-
-    function printEntries() {
-        for (let i = 0; i < querys[0].length; i++) {
-            console.log(querys[0][i]);
-        }
-    }
-    function Logout() {
-      Axios.post("http://localhost:3001/logout").then((Response) => {
-  
-        if(Response.data.LoggedOut == true) {
-  
-          navigate("/");
+      useEffect(() => {
         
-        }
-      });
-    }
+   
+        
+      }, []);
 
-    return (
-      <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
+
+      function Logout() {
+        Axios.post("http://localhost:3001/logout").then((Response) => {
+    
+          if(Response.data.LoggedOut == true) {
+    
+            navigate("/");
+          
+          }
+        });
+      }
+
+    return(
+        <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
       <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
         <div className="flex flex-wrap items-center justify-between ">
           <a href="Mainpage" className="">
@@ -111,22 +83,22 @@ const Entries = () => {
               <li>
                 <a
                   href="/Entries"
-                  className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0"
-                  aria-current="page">
+                  className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 ">
                   Log
                 </a>
               </li>
               <li>
                 <a
                   href="/About"
-                  className= "block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 ">
+                  className=" block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0"
+                  aria-current="page">
                   About
                 </a>
               </li>
              
               <div className="grid">
               <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
-              bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 
+              bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
               focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={()=> {Logout();}}>
                
                 Log out
@@ -138,19 +110,58 @@ const Entries = () => {
           </div>
         </div>
       </nav>
-   
-   
-        
-         <Querylist />
-         <div className="flex-grow">
+      <div className=""></div>
+      <div className=" mt-3 flex justify-center w-max-11/12 ">
+   <div className="resize border-2 overflow-auto w-8/12 bg-white ">
+    
+{/* <iframe title="Pflichtenheft" src="Plichtenheft.pdf" className="w-full h-full"></iframe> */}
+</div>
+</div>
+      <div className="flex-grow">
       </div>
       <span>logged in as:{}</span>
       
       
        
-            </div>
-        
-    );
-};
+    </div>
+    
 
-export default Entries;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    );
+}
+
+export default About;

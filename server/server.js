@@ -26,6 +26,7 @@ let ESPArray = [{
     name: "ESP1",
     on: led1state
 },
+
 {
     name:"ESP2",
     on: led2state
@@ -262,7 +263,7 @@ app.post('/logout', (req, res) => {
         })
     }
     else {
-        
+        res.send({LoggedOut: false});
     }
 });
 
