@@ -35,6 +35,7 @@ const Querylist = () => {
           if(Response.data.LoggedIn) {
 
             navigate("/mainpage");
+            navigate("/entries");
           }
           else {
             navigate("/");
