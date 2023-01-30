@@ -31,7 +31,7 @@ let ESPArray = () => {
     return ESPArray;
 }
 
-let bool = false;
+
 
 const mysql = require('mysql2/promise');
 const { clearInterval } = require('timers');
@@ -71,7 +71,6 @@ app.use(cors({
 
 app.post('/time', (req, res) => {
 
-    bool = !bool;
     if(req.session.user) {
         let hours = req.body.ledhours
         let minutes = req.body.ledminutes
@@ -81,6 +80,7 @@ app.post('/time', (req, res) => {
 
         wss.clients.forEach(ws => {
             if(ws.id == req.body.ESPName) {
+                ws.timerstatus = !ws.timerstatus
                 ws.hours = hours;
                 ws.minutes = minutes;
                 ws.seconds = seconds;
@@ -91,7 +91,7 @@ app.post('/time', (req, res) => {
                 
                 const interval = setInterval(()=> {
 
-                    if(bool) {
+                    if(ws.timerstatus) {
 
                         if(ws.seconds == 0) {
                             if(ws.minutes == 0) {
@@ -107,7 +107,10 @@ app.post('/time', (req, res) => {
 
                             ws.seconds = 59;
                             ws.minutes = ws.minutes - 1;
-    
+                            if(ws.hours == 0) {
+                                
+                                
+                            }
                         }
                         else {
                             ws.seconds = ws.seconds - 1;
@@ -115,6 +118,11 @@ app.post('/time', (req, res) => {
                     }
                     else {
                         clearInterval(interval);
+                        clearTimeout(timer);
+                        ws.hours = 0;
+                        ws.minutes = 0;
+                        ws.seconds = 0;
+                        ws.sumhours = 0;
                     }
                     
 
@@ -369,6 +377,7 @@ wss.on('connection', (ws, req) => {
     ws.minutes;
     ws.seconds;
     ws.sumhours;
+    ws.timerstatus = false;
 
     IO.emit("ledstate", { Message: ESPArray() });
     
