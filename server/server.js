@@ -24,15 +24,19 @@ let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
-            ESPArray.push({ name: ws.id, on: ws.status });
+            ESPArray.push({ name: ws.id, on: ws.status, hours: ws.hours, minutes: ws.minutes, seconds: ws.seconds });
         }
         
     })
     return ESPArray;
 }
 
+let bool = false;
 
 const mysql = require('mysql2/promise');
+const { clearInterval } = require('timers');
+
+
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -64,27 +68,70 @@ app.use(cors({
 
 
 
+
 app.post('/time', (req, res) => {
 
+    bool = !bool;
     if(req.session.user) {
         let hours = req.body.ledhours
         let minutes = req.body.ledminutes
+        let seconds = 0;
+        let status = req.body.status;
 
-        let sumHours = hours + minutes/60
+
+        wss.clients.forEach(ws => {
+            if(ws.id == req.body.ESPName) {
+                ws.hours = hours;
+                ws.minutes = minutes;
+                ws.seconds = seconds;
+                ws.sumhours = ws.hours + ws.minutes/60
+
+                IO.emit("ledstate", { Message: ESPArray() });
+                
+                
+                const interval = setInterval(()=> {
+
+                    if(bool) {
+
+                        if(ws.seconds == 0) {
+                            if(ws.minutes == 0) {
+                                if(ws.hours == 0) {
+                                    clearInterval(interval);
+                                }
+
+                                ws.minutes = 59;
+                                ws.seconds = 59;
+                                ws.hours = ws.hours - 1;
+                                
+                            }
+
+                            ws.seconds = 59;
+                            ws.minutes = ws.minutes - 1;
+    
+                        }
+                        else {
+                            ws.seconds = ws.seconds - 1;
+                        }
+                    }
+                    else {
+                        clearInterval(interval);
+                    }
+                    
+
+                    IO.emit("ledstate", { Message: ESPArray() });
+                }, 1000)
+
+                const timer = setTimeout(()=>{
+
+                    console.log("test pls geh txt");
+                }, ws.sumhours * 3600000);
+            }
+        })
+       
+        res.send({test: true});
         
-        if(hours > 0 && minutes > 0) {
-            wss.clients.forEach(ws => {
-                if(ws.id == req.body.ESP) {
-                    setTimeout(()=> {
-                        ws.send("off");
-                    }, sumHours * 3600000)
-                }
-            });
-        }
-        else {
-            res.status(500).send("Invalid Number");
-        }
     }
+
     else {
         res.send({LoggedIn: false});
     } 
@@ -93,9 +140,12 @@ app.post('/time', (req, res) => {
 app.post("/clear", async (req, res) => {
 
     if(req.session.user) {
-        let query = "DELETE FROM eintraege;"
-        (await connection).query(query);
-        res.send({LoggedIn: true});
+
+        let an = await (await connection).query("DELETE FROM eintraege");
+        console.log(an);
+         res.send({LoggedIn: true});
+        
+          
     }
     else {
         res.send({LoggedIn: false});
@@ -180,6 +230,7 @@ app.post('/entries', async (req, res) => {
     }
 
 });
+
 
 app.post('/state', (req, res) => {
     if (req.session.user) {
@@ -314,6 +365,10 @@ wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     ws.id = pathname.path.substring(1);
     ws.status = false;
+    ws.hours;
+    ws.minutes;
+    ws.seconds;
+    ws.sumhours;
 
     IO.emit("ledstate", { Message: ESPArray() });
     

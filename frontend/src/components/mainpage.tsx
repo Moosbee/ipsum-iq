@@ -2,7 +2,6 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import Timer from "./timer";
 
 
@@ -10,14 +9,12 @@ import Timer from "./timer";
 const Mainpage = () => {
 
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
-  const [hours, sethours] = useState(5);
-  const [minutes, setminutes] = useState(6);
-  const [seconds, setseconds] = useState(9);
-
+  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean, hours: number, minutes: number, seconds: number }[]>([]);
+  const [hours, sethours] = useState(0)
+  const [minutes, setminutes] = useState(0)
+ 
   const navigate = useNavigate();
   const Light = false;
-  let timer: any;
 
   const ws = () => {
     const socket = io("ws://localhost:3001");
@@ -50,28 +47,31 @@ const Mainpage = () => {
     });
 
     ws();
-    if(hours < 0) {
+    // const timer = setInterval(() => {
+
+    //   setseconds(seconds - 1);
+    
+    //   if(seconds === 0) {
+    //     setseconds(59)
+    //     setminutes(minutes-1)
+  
+    //   }
+  
+    //   if(minutes === 0 && hours > 0) {
+    //     setminutes(59)
+    //     sethours(hours - 1);
+    //   }
+    //   if(hours === 0) {
+    //     sethours(0);
+    //   }
       
-    }
+    // }, 1000)
+
+    // return ()=> {clearInterval(timer);}
     
   }, []);
 
-  timer = setInterval(() => {
-
-    setseconds(seconds - 1);
-  
-    if(seconds === 0) {
-      setseconds(59)
-      setminutes(minutes-1)
-
-    }
-
-    if(minutes === 0) {
-      setminutes(59)
-      sethours(hours - 1);
-    }
-    
-  }, 1000)
+ 
 
   
 
@@ -116,17 +116,21 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
       }
     });
   }
-  var emailCheck = /^[^a-z][0-9]+$/;
  
 
-  function setTime(ESP: string) {
-    Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP}).then((Response) => {
+  function setTime(ESP: string, statusled: boolean) {
+    Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled}).then((Response) => {
 
-
+        if(Response.data.test == true) {
+          sethours(0)
+          setminutes(0)
+        }
 
     });
+
   }
   return (
+    
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
       <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
         <div className="flex flex-wrap items-center justify-between ">
@@ -224,33 +228,35 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
           </div>
           <div className="flex  flex-col">
           <span className="text-xl self-center">{light.name}</span>
-          <form action="flex flex-row">
+          
           <label className="">
             <input type="number" placeholder="00" max="23" min="0" id="num" name="num" 
            onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
+              
               return  evt.key
            } else {
 
             evt.preventDefault()
            }
           }}
-          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
+          onChange={(event: any) => {(event.target.value = event.target.value.slice(0, 2)); sethours(event.target.value)}} 
           className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
             :
             <input type="number" placeholder="00" max="59" min="1"  id="num2" name="num2" 
              onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
+
               return  evt.key
            } else {
 
             evt.preventDefault()
            }
           }}
-              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
+              onChange={(event: any) => {(event.target.value = event.target.value.slice(0, 2)); setminutes(event.target.value)}} 
               className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
        
           </label>
-          <button>butoon</button>
-          </form>
+          <button onClick={()=>{setTime(light.name, light.on)}}>butoon</button>
+          
           </div>
           
           <div className="grid col-1 gap-y-3 mr-4">
@@ -272,7 +278,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
             Turn off
           </button>
           </div>
-          
+          <Timer hours={light.hours} minutes={light.minutes} seconds={light.seconds} />
           </div>
         </div>
               
@@ -284,7 +290,9 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
      
       <div className="flex-grow">
       </div>
-      <span>logged in as:{}</span>
+      
+
+      
       
       
        

@@ -25,7 +25,7 @@ interface TimerProps {
 
     return <Fragment>
         <section>
-                <p>{hours < 10? "0" +hours: hours}:{minutes < 10? "0" +minutes: minutes}:{seconds < 10? "0" +seconds: seconds}</p>
+                <span>{hours < 10? "0" +hours: hours}:{minutes < 10? "0" +minutes: minutes}:{seconds < 10? "0" +seconds: seconds}</span>
 
         </section>
 
