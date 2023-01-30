@@ -3,7 +3,7 @@ const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require("express-session");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
@@ -42,7 +42,7 @@ const connInfo = {
 }
 const connection = mysql.createConnection(connInfo);
 
-
+app.use(cookieParser())
 app.use(session({
     secret: 'secretkey',
     cookie: { maxAge: 1000 * 60 * 10 },
@@ -53,7 +53,7 @@ app.use(session({
 }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser())
+
 app.use(express.json());
 
 app.use(cors({
