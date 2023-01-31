@@ -3,7 +3,7 @@ const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require("express-session");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const store = new session.MemoryStore();
 const cors = require('cors');
 const http = require('http');
@@ -19,22 +19,24 @@ const IO = new Server(server, {
     }
 });
 
-let led1state = false;
-let led2state = false;
 
 let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
-            ESPArray.push({ name: ws.id, on: ws.status });
+            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time });
         }
         
     })
     return ESPArray;
 }
 
+
+
 const mysql = require('mysql2/promise');
-const { client } = require('websocket');
+const { clearInterval } = require('timers');
+
+
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -44,6 +46,7 @@ const connInfo = {
 }
 const connection = mysql.createConnection(connInfo);
 
+app.use(cookieParser())
 app.use(session({
     secret: 'secretkey',
     cookie: { maxAge: 1000 * 60 * 10 },
@@ -54,7 +57,7 @@ app.use(session({
 }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser())
+
 app.use(express.json());
 
 app.use(cors({
@@ -65,28 +68,61 @@ app.use(cors({
 
 
 
+
 app.post('/time', (req, res) => {
 
+    console.log("moruk test")
     if(req.session.user) {
-        if(req.body.time > 0) {
+       
+        let hours = req.body.ledhours;
+        let minutes = req.body.ledminutes;
 
-            setTimeout(() => {
-                ws.send("off")
-            }, req.body.time);
-            res.send({LoggedIn: true});
-        }
-        else {
-            res.status(500).send("Invalid Time");
-        }
+        console.log(hours)
+        console.log(minutes)
+
+        wss.clients.forEach(ws => {
+            
+            if(ws.id == req.body.ESPName) {
+                ws.time = (hours + minutes/60) * 3600000;
+                
+                ws.timerstatus = !ws.timerstatus;
+                if(ws.timerstatus) {
+                    const timer = setTimeout(()=>{
+
+                        console.log("test pls geh txt");
+                        ws.send("off")
+                        ws.timerstatus = false;
+                    }, ws.time);
+                }
+                else {
+                    ws.timerstatus = true;
+                }                
+            }
+        })
+       
+        res.send({test: true});
+        
+    }
+
+    else {
+        res.send({LoggedIn: false});
+    } 
+});
+
+app.post("/clear", async (req, res) => {
+
+    if(req.session.user) {
+
+        let an = await (await connection).query("DELETE FROM eintraege");
+        console.log(an);
+         res.send({LoggedIn: true});
+        
+          
     }
     else {
         res.send({LoggedIn: false});
     }
-    
-   
 });
-
-
 
 app.get('/entries', async (req, res) => {
 
@@ -167,6 +203,7 @@ app.post('/entries', async (req, res) => {
 
 });
 
+
 app.post('/state', (req, res) => {
     if (req.session.user) {
         let name = req.body.ledname;
@@ -217,9 +254,6 @@ app.post('/users', async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        console.log(salt);
-        console.log(hashedPassword);
-
         const user = { name: req.body.name, password: hashedPassword };
         const query = `INSERT INTO user (username, password) VALUES ("${user.name}", "${user.password}")`;
         res.status(201).send("Successfully registered");
@@ -234,7 +268,7 @@ app.post('/users', async (req, res) => {
         });
 
     } catch {
-        res.status(500).send("Fatal Error");
+        res.status(500).send("Error");
     }
 
 
@@ -276,7 +310,6 @@ app.post('/login', async (req, res) => {
 
 });
 
-
 app.post('/logout', (req, res) => {
 
     if (req.session.user) {
@@ -285,12 +318,11 @@ app.post('/logout', (req, res) => {
         })
     }
     else {
-
+        res.send({LoggedOut: false});
     }
 });
 
 //Websocket Server -> ESP Code
-
 
 function heartbeat () {
     this.isAlive = true;
@@ -305,6 +337,8 @@ wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     ws.id = pathname.path.substring(1);
     ws.status = false;
+    ws.time;
+    ws.timerstatus = false;
 
     IO.emit("ledstate", { Message: ESPArray() });
     
@@ -343,13 +377,7 @@ wss.on('connection', (ws, req) => {
 
         IO.emit("ledstate", { Message: ESPArray() });
 
-
-
-
     });
-
-
-
 })
 
 const interval = setInterval(function ping() {
@@ -362,7 +390,7 @@ const interval = setInterval(function ping() {
       ws.ping();
     });
 
-  }, 30000);
+  }, 30000 * 2 * 5);
 
   
   wss.on("close", function close() {

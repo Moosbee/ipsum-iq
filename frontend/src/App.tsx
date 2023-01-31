@@ -1,12 +1,15 @@
 import React from "react";
 import "./App.css";
 import { HashRouter as Router, Route, Link, Routes } from "react-router-dom";
-import { ProjectsPage } from "./components/ProjectsPage";
 import { Login } from "./components/login";
 import Mainpage from "./components/mainpage";
 import Layout from "./components/layout";
 import Entries from "./components/entries";
 import Querylist from "./components/querylist";
+import About from "./components/about";
+import Timer from "./components/timer";
+import ESP from "./components/esp";
+
 
 function App() {
   return (
@@ -19,6 +22,8 @@ function App() {
         <Route path="/Mainpage" element={<Mainpage />} />
         <Route path="/entries" element={<Entries/>}></Route>
         <Route path="/Entries" element={<Entries/>}></Route>
+        <Route path="/about" element={<About/>}></Route>
+        <Route path="/About" element={<About/>}></Route>
 
         {/* Optional index route if no nested routes match */}
           <Route index element={<Login />} />
