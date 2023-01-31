@@ -423,6 +423,21 @@ wss.on('connection', (ws, req) => {
     });
 })
 
+app.use('/', express.static('./frontendBuild/'));
+
+app.all('*', function (req, res, next) {
+    try {
+      res
+        .status(404)
+        .sendFile(
+          normalize('./frontendBuild/index.html')
+        );
+    } catch (error) {
+      console.log(error);
+    }
+    // next(); // pass control to the next handler
+  });
+
 const interval = setInterval(function ping() {
     wss.clients.forEach(function each(ws) {
       if (ws.isAlive === false) {
