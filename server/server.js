@@ -71,17 +71,32 @@ app.use(cors({
 
 app.post('/time', (req, res) => {
 
-    
+    console.log("moruk test")
     if(req.session.user) {
-       ws.time = (req.body.hours + req.body.minutes/60) * 3600000;
+       
+        let hours = req.body.ledhours;
+        let minutes = req.body.ledminutes;
+
+        console.log(hours)
+        console.log(minutes)
+
         wss.clients.forEach(ws => {
+            
             if(ws.id == req.body.ESPName) {
+                ws.time = (hours + minutes/60) * 3600000;
+                
+                ws.timerstatus = !ws.timerstatus;
+                if(ws.timerstatus) {
+                    const timer = setTimeout(()=>{
 
-                const timer = setTimeout(()=>{
-
-                    console.log("test pls geh txt");
-                    ws.send("off")
-                }, ws.time);
+                        console.log("test pls geh txt");
+                        ws.send("off")
+                        ws.timerstatus = false;
+                    }, ws.time);
+                }
+                else {
+                    ws.timerstatus = true;
+                }                
             }
         })
        

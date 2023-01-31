@@ -2,7 +2,6 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import Timer from "./timer";
 import ESP from "./esp";
 
 

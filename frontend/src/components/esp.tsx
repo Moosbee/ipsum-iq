@@ -3,6 +3,7 @@ import Axios from 'axios';
 import { BrowserRouter as Router, Navigate, Route } from "react-router-dom";
 import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from "react-router-dom";
+import Timer from "./timer";
 
 interface ESPProps {
     light: any
@@ -14,6 +15,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     const allowedNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Delete', 'Backspace']
     const navigate = useNavigate();
     const [isActive, setActive] = useState<boolean | undefined>(false);
+    const [hoursServer, sethoursServer] = useState(0)
+    const [minutesServer, setminutesServer] = useState(0)
     const [hours, sethours] = useState(0)
     const [minutes, setminutes] = useState(0)
 
@@ -45,8 +48,12 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     }
 
     function setTime(ESP: string, statusled: boolean) {
-        Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
+        Axios.post("http://localhost:3001/time", { ledhours: hoursServer, ledminutes: minutesServer, ESPName: ESP, status: statusled }).then((Response) => {
 
+            sethours(hoursServer);
+            setminutes(minutesServer);
+            console.log(hoursServer)
+            console.log(minutesServer);
 
         });
     }
@@ -67,7 +74,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                     </div>
                     <div className="flex  flex-col">
                         <span className="text-xl self-center">{light.name}</span>
-
+                     
                         <label className="">
                             <input type="number" placeholder="00" max="23" min="0" id="num" name="num"
                                 onKeyDown={(evt) => {
@@ -79,7 +86,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                                         evt.preventDefault()
                                     }
                                 }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); sethours(event.target.value) }}
+                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); sethoursServer(event.target.value) }}
                                 className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
                             :
                             <input type="number" placeholder="00" max="59" min="1" id="num2" name="num2"
@@ -92,12 +99,12 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                                         evt.preventDefault()
                                     }
                                 }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); setminutes(event.target.value) }}
+                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); setminutesServer(event.target.value) }}
                                 className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
 
                         </label>
                         <button onClick={() => { setTime(light.name, light.on) }}>butoon</button>
-
+                             
                     </div>
 
                     <div className="grid col-1 gap-y-3 mr-4">
@@ -119,6 +126,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                             Turn off
                         </button>
                     </div>
+
+                    <Timer hours={hours} minutes={minutes} />
                 </div>
             </div>
 
