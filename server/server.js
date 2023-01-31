@@ -24,7 +24,7 @@ let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
-            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time });
+            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time, futureTime: ws.futureTime });
         }
         
     })
@@ -66,42 +66,73 @@ app.use(cors({
     credentials: true
 }));
 
+function ClearTime (name) {
 
+    wss.clients.forEach(ws => {
+        if(ws.id == name) {
+            console.log("mrk timer cancel")
+            clearTimeout(ws.timer);
+            ws.futureTime = 0;
+            IO.emit("ledstate", {Message: ESPArray()})
+            
+        }
+    })
+}
 
 
 app.post('/time', (req, res) => {
 
+
+      
+    let hours = +req.body.ledhours;
+    let minutes = +req.body.ledminutes;
+    let date = new Date().getTime();
+
     console.log("moruk test")
     if(req.session.user) {
        
-        let hours = req.body.ledhours;
-        let minutes = req.body.ledminutes;
-
-        console.log(hours)
-        console.log(minutes)
-
         wss.clients.forEach(ws => {
-            
+
             if(ws.id == req.body.ESPName) {
-                ws.time = (hours + minutes/60) * 3600000;
+                
+                ws.time = (hours * 60 + minutes) * 60 * 1000
+                console.log("HOURS " + hours);
+                
+                
+                ws.futureTime = date + ws.time;
                 
                 ws.timerstatus = !ws.timerstatus;
-                if(ws.timerstatus) {
-                    const timer = setTimeout(()=>{
+                // if(ws.timerstatus) {
 
-                        console.log("test pls geh txt");
-                        ws.send("off")
-                        ws.timerstatus = false;
-                    }, ws.time);
-                }
-                else {
-                    ws.timerstatus = true;
-                }                
+                    ws.timer = setTimeout(()=> {
+
+                        console.log("test pls geh thx");
+
+
+                        ws.send("off");
+                        
+                        ws.timestatus = false;
+                    }, ws.time)
+
+                    
+
+                    IO.emit("ledstate", {Message: ESPArray()})
+                // }
+                // else {
+                //     clearTimeout(ws.timer);
+                //     console.log("timer cleared");
+                    
+                // }
+
+                
             }
+            else {
+                
+            }
+
         })
-       
-        res.send({test: true});
-        
+    
+        res.send({LoggedIn: true})
     }
 
     else {
@@ -109,6 +140,16 @@ app.post('/time', (req, res) => {
     } 
 });
 
+app.post('/timeclear', (req, res) => {
+
+    if(req.session.user) {
+        ClearTime(req.body.ESPName);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+})
 app.post("/clear", async (req, res) => {
 
     if(req.session.user) {
@@ -339,6 +380,8 @@ wss.on('connection', (ws, req) => {
     ws.status = false;
     ws.time;
     ws.timerstatus = false;
+    ws.timer;
+    ws.futureTime = 0;
 
     IO.emit("ledstate", { Message: ESPArray() });
     
