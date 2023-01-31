@@ -6,6 +6,8 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const store = new session.MemoryStore();
 const cors = require('cors');
+const mysql = require('mysql2/promise');
+const { clearInterval } = require('timers');
 const http = require('http');
 const url = require('url');
 const server = http.createServer(app);
@@ -30,12 +32,6 @@ let ESPArray = () => {
     })
     return ESPArray;
 }
-
-
-
-const mysql = require('mysql2/promise');
-const { clearInterval } = require('timers');
-
 
 const connInfo = {
     host: "127.0.0.1",
@@ -82,8 +78,6 @@ function ClearTime (name) {
 
 app.post('/time', (req, res) => {
 
-
-      
     let hours = +req.body.ledhours;
     let minutes = +req.body.ledminutes;
     let date = new Date().getTime();
