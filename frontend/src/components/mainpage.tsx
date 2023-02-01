@@ -106,7 +106,7 @@ const Mainpage = () => {
   }
 
 
-const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
+
 
 
   function Logout() {

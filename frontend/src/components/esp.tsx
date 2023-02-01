@@ -79,7 +79,12 @@ const ESP: React.FC<ESPProps> = ({light}) => {
             <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
             <div className="flex justify-between h-full items-center">
               <div className="-mr-6 -ml-2">
-              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}>
+              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name);
+                    if(light.on === true){
+
+                        ClearTimer(light.name)
+                    }
+                }}>
               <img
                 src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
                 id="bulbbnt"
@@ -100,7 +105,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
             evt.preventDefault()
            }
           }}
-          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2)) 
+          onChange={(event: any) => {(event.target.value = event.target.value.slice(0, 2));sethours(event.target.value);
           if (event.target.value.length >= 2){
             (event.target.nextElementSibling?.nextElementSibling as HTMLElement)?.focus()
           }}}
@@ -117,13 +122,13 @@ const ESP: React.FC<ESPProps> = ({light}) => {
            }
          
           }}
-              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))
+              onChange={(event:any) => {(event.target.value = event.target.value.slice(0, 2));setminutes(event.target.value);
                 if ((event.target as HTMLInputElement).value.length === 0){
                   (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
                 }}} 
               className="NumericEntry focus:ring-0 appearance-none border-none focus:outline-none w-5 p-0" required></input>
-       <button  onClick={StopBut} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
-       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+       <button  onClick={() => { setTime(light.name, light.on); StopBut()}} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
+       <svg xmlns="http://www.w3.org/200)0/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
 </svg>
 
@@ -133,7 +138,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
           </div>
                 <div className="self-center">
                   <span><Timer futureTime={light.futureTime} /></span>
-                    <button onClick={StopBut} className="">
+                    <button onClick={() =>{StopBut(); ClearTimer(light.name)}} className="">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14.5" fill="currentColor" className="w-4 h-4">
                       <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                       </svg>
@@ -154,7 +159,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
           </button>
 
            <button
-            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name); ClearTimer(light.name)}}
             id="btn2"
             className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
             : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
