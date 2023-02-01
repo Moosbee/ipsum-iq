@@ -288,7 +288,7 @@ void setup() {
   wifiManager.setCustomHeadElement("<style>html{color:blue;}</style>");
 
   // Connect to Wi-Fi
-  wifiManager.autoConnect("IPSUMIQ", "IQ-ESP8233");
+  wifiManager.autoConnect("IPSUM|IQ", "IQ-ESP8233");
 
   // Print ESP Local IP Address
   debugln(WiFi.localIP());

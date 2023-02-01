@@ -2,21 +2,22 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import ESP from "./esp";
+
+
 import Timer from "./timer";
 
 const Mainpage = () => {
 
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean }[]>([]);
-  const [hours, sethours] = useState(5);
-  const [minutes, setminutes] = useState(6);
-  const [seconds, setseconds] = useState(9);
+  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean, hours: number, minutes: number, seconds: number }[]>([]);
+  const [hours, sethours] = useState(0)
+  const [minutes, setminutes] = useState(0)
   const [stopped, setstopper] = useState<boolean | undefined>(true);
   
 
   const navigate = useNavigate();
   const Light = false;
-  let timer: any;
 
   const ws = () => {
     const socket = io("ws://localhost:3001");
@@ -29,7 +30,7 @@ const Mainpage = () => {
 
     });
   }
-  
+
   const mobileMenu = () => {
     setActive(!isActive);
   };
@@ -49,30 +50,33 @@ const Mainpage = () => {
     });
 
     ws();
-    if(hours < 0) {
-      
-    }
-    
+    // const timer = setInterval(() => {
+
+    //   setseconds(seconds - 1);
+
+    //   if(seconds === 0) {
+    //     setseconds(59)
+    //     setminutes(minutes-1)
+
+    //   }
+
+    //   if(minutes === 0 && hours > 0) {
+    //     setminutes(59)
+    //     sethours(hours - 1);
+    //   }
+    //   if(hours === 0) {
+    //     sethours(0);
+    //   }
+
+    // }, 1000)
+
+    // return ()=> {clearInterval(timer);}
+
   }, []);
 
-  timer = setInterval(() => {
 
-    setseconds(seconds - 1);
-  
-    if(seconds === 0) {
-      setseconds(59)
-      setminutes(minutes-1)
 
-    }
 
-    if(minutes === 0) {
-      setminutes(59)
-      sethours(hours - 1);
-    }
-    
-  }, 1000)
-
-  
 
   function InsertIntoDB(name: string) {
     Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
@@ -123,12 +127,12 @@ const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
 
 
 
-  function setTime(ESP: string) {
-    Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP}).then((Response) => {
+  function setTime(ESP: string, statusled: boolean) {
+    Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
 
-
-
+   
     });
+
   }
 
 
@@ -136,6 +140,7 @@ const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
 
   
   return (
+
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
       <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
         <div className="flex flex-wrap items-center justify-between ">
@@ -200,121 +205,29 @@ const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
                   About
                 </a>
               </li>
-             
+
               <div className="grid">
-              <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
+                <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
               bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
-              focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={()=> {Logout();}}>
-               
-                Log out
-              
-              </button>
+              focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={() => { Logout(); }}>
+
+                  Log out
+
+                </button>
               </div>
             </ul>
 
           </div>
         </div>
       </nav>
-    <div className="sm:mx-3 mx-2 ">
-    <div className="grid mt-2 grid-cols-1 sm:grid-cols-2 sm:gap-x-3 gap-y-3 grid-flow-row-dense">
-            {lightstate.map((light)=>
-            
-        <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
-            <div className="flex justify-between h-full items-center">
-              <div className="-mr-6 -ml-2">
-              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}>
-              <img
-                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
-                id="bulbbnt"
-                alt={light.on ? "bulb_on" : "bulb_off"}
-                className="sm:h-44"
-                />
-              </button>
-          </div>
-          <div className="flex  flex-col">
-          <span className="text-xl self-center">{light.name}</span>
-          <div className="flex justify-center">
-          <label className="EM ">
-            <input type="number" placeholder="00" max="23" min="0" id="num" name={light.name} maxLength={2}
-           onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
-              
-           } else {
+      <div className="sm:mx-3 mx-2 ">
+        <div className="grid mt-2 grid-cols-1 sm:grid-cols-2 sm:gap-x-3 gap-y-3 grid-flow-row-dense">
+          {lightstate.map((light)=>
+            <ESP light={light} />
+          )}
 
-            evt.preventDefault()
-           }
-          }}
-          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2)) 
-          if (event.target.value.length >= 2){
-            (event.target.nextElementSibling?.nextElementSibling as HTMLElement)?.focus()
-          }}}
-          className="focus:ring-0 appearance-none  border-none focus:outline-none p-0 NumericEntry w-5 text-right" required></input>
-
-            <span>:</span>
-
-            <input type="number" placeholder="00" max="59" min="1"  id="num2" name={light.name + '2'} 
-             onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
-              return  evt.key
-           } else {
-
-            evt.preventDefault()
-           }
-         
-          }}
-              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))
-                if ((event.target as HTMLInputElement).value.length === 0){
-                  (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
-                }}} 
-              className="NumericEntry focus:ring-0 appearance-none border-none focus:outline-none w-5 p-0" required></input>
-       <button  onClick={StopBut} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
-       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-</svg>
-
-       </button>
-          </label>
-          
-          </div>
-                <div className="self-center">
-                  <span>00:00</span>
-                    <button onClick={StopBut} className="">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14.5" fill="currentColor" className="w-4 h-4">
-                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                      </svg>
-                  </button>
-                </div>
-
-          </div>
-          
-          <div className="grid col-1 gap-y-3 mr-4">
-          <button
-            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
-            id="btn1"
-            className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
-            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
-            disabled={light.on ? true : false}>
-            Turn On
-          </button>
-
-           <button
-            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
-            id="btn2"
-            className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
-            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
-            disabled={light.on ? false : true}>
-            Turn off
-          </button>
-                
-          </div>
-          
-          </div>
         </div>
-              
-            )}
-         
       </div>
-      </div>
-
-     
       <div className="flex-grow">
       </div>
       <span className="ml-3">logged in as:{}</span>
@@ -322,7 +235,7 @@ const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
       
        
     </div>
-    
+
   );
 };
 

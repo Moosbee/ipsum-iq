@@ -3,9 +3,11 @@ const app = express();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require("express-session");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const store = new session.MemoryStore();
 const cors = require('cors');
+const mysql = require('mysql2/promise');
+const { clearInterval } = require('timers');
 const http = require('http');
 const url = require('url');
 const server = http.createServer(app);
@@ -35,15 +37,13 @@ on: false,
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
-            ESPArray.push({ name: ws.id, on: ws.status });
+            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time, futureTime: ws.futureTime });
         }
         
     })
     return ESPArray;
 } */
 
-
-const mysql = require('mysql2/promise');
 const connInfo = {
     host: "127.0.0.1",
     user: "root",
@@ -53,7 +53,7 @@ const connInfo = {
 }
 const connection = mysql.createConnection(connInfo);
 
-
+app.use(cookieParser())
 app.use(session({
     secret: 'secretkey',
     cookie: { maxAge: 1000 * 60 * 10 },
@@ -64,7 +64,7 @@ app.use(session({
 }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser())
+
 app.use(express.json());
 
 app.use(cors({
@@ -73,40 +73,97 @@ app.use(cors({
     credentials: true
 }));
 
+function ClearTime (name) {
+
+    wss.clients.forEach(ws => {
+        if(ws.id == name) {
+            console.log("mrk timer cancel")
+            clearTimeout(ws.timer);
+            ws.futureTime = 0;
+            IO.emit("ledstate", {Message: ESPArray()})
+            
+        }
+    })
+}
 
 
 app.post('/time', (req, res) => {
 
-    if(req.session.user) {
-        let hours = req.body.ledhours
-        let minutes = req.body.ledminutes
+    let hours = +req.body.ledhours;
+    let minutes = +req.body.ledminutes;
+    let date = new Date().getTime();
 
-        let sumHours = hours + minutes/60
-        
-        if(hours > 0 && minutes > 0) {
-            wss.clients.forEach(ws => {
-                if(ws.id == req.body.ESP) {
-                    setTimeout(()=> {
+    console.log("moruk test")
+    if(req.session.user) {
+       
+        wss.clients.forEach(ws => {
+
+            if(ws.id == req.body.ESPName) {
+                
+                ws.time = (hours * 60 + minutes) * 60 * 1000
+                console.log("HOURS " + hours);
+                
+                
+                ws.futureTime = date + ws.time;
+                
+                ws.timerstatus = !ws.timerstatus;
+                // if(ws.timerstatus) {
+
+                    ws.timer = setTimeout(()=> {
+
+                        console.log("test pls geh thx");
+
+
                         ws.send("off");
-                    }, sumHours * 3600000)
-                }
-            });
-        }
-        else {
-            res.status(500).send("Invalid Number");
-        }
+                        
+                        ws.timestatus = false;
+                    }, ws.time)
+
+                    
+
+                    IO.emit("ledstate", {Message: ESPArray()})
+                // }
+                // else {
+                //     clearTimeout(ws.timer);
+                //     console.log("timer cleared");
+                    
+                // }
+
+                
+            }
+            else {
+                
+            }
+
+        })
+    
+        res.send({LoggedIn: true})
     }
+
     else {
         res.send({LoggedIn: false});
     } 
 });
 
+app.post('/timeclear', (req, res) => {
+
+    if(req.session.user) {
+        ClearTime(req.body.ESPName);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+})
 app.post("/clear", async (req, res) => {
 
     if(req.session.user) {
-        let query = "DELETE FROM eintraege;"
-        (await connection).query(query);
-        res.send({LoggedIn: true});
+
+        let an = await (await connection).query("DELETE FROM eintraege");
+        console.log(an);
+         res.send({LoggedIn: true});
+        
+          
     }
     else {
         res.send({LoggedIn: false});
@@ -191,6 +248,7 @@ app.post('/entries', async (req, res) => {
     }
 
 });
+
 
 app.post('/state', (req, res) => {
     if (req.session.user) {
@@ -325,6 +383,10 @@ wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     ws.id = pathname.path.substring(1);
     ws.status = false;
+    ws.time;
+    ws.timerstatus = false;
+    ws.timer;
+    ws.futureTime = 0;
 
     IO.emit("ledstate", { Message: ESPArray() });
     
@@ -365,6 +427,21 @@ wss.on('connection', (ws, req) => {
 
     });
 })
+
+app.use('/', express.static('./frontendBuild/'));
+
+app.all('*', function (req, res, next) {
+    try {
+      res
+        .status(404)
+        .sendFile(
+          normalize('./frontendBuild/index.html')
+        );
+    } catch (error) {
+      console.log(error);
+    }
+    // next(); // pass control to the next handler
+  });
 
 const interval = setInterval(function ping() {
     wss.clients.forEach(function each(ws) {

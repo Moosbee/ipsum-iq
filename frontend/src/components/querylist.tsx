@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 const Querylist = () => {
     const navigate = useNavigate();
     const names = ["Moruk", "el", "Ehemst"];
+ 
+    
     Axios.defaults.withCredentials = true;
     const [querys, setQuerys] = useState<any[]>([]);
 
@@ -18,6 +20,7 @@ const Querylist = () => {
 
             if (Response.data.result) {
                 setQuerys(Response.data.result);
+                
             }
 
             else {
@@ -30,6 +33,8 @@ const Querylist = () => {
     function ClearDB () {
         Axios.post("http://localhost:3001/clear").then((Response) => {
           if(Response.data.LoggedIn) {
+
+            navigate("/mainpage");
             navigate("/entries");
           }
           else {

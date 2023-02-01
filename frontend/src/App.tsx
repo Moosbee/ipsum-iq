@@ -8,6 +8,8 @@ import Entries from "./components/entries";
 import Querylist from "./components/querylist";
 import About from "./components/about";
 import Timer from "./components/timer";
+import ESP from "./components/esp";
+
 
 function App() {
   return (

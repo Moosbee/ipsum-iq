@@ -9,7 +9,7 @@ const Entries = () => {
 
     const navigate = useNavigate();
     Axios.defaults.withCredentials = true;
-    const [querys, setQuerys] = useState<any[]>([]);
+    
 
     const [isActive, setActive] = useState<boolean | undefined>(false);
     const mobileMenu = () => {
@@ -31,18 +31,11 @@ const Entries = () => {
                 navigate("/");
             }
 
-            if (Response.data.result) {
-                setQuerys(Response.data.result);
-            }
-
-            else {
-                console.log("error");
-            }
 
         });
-    }, [querys]);
+    }, []);
 
-   
+    
     function Logout() {
       Axios.post("http://localhost:3001/logout").then((Response) => {
   
