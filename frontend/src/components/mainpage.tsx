@@ -48,29 +48,7 @@ const Mainpage = () => {
         navigate("/");
       }
     });
-
     ws();
-    // const timer = setInterval(() => {
-
-    //   setseconds(seconds - 1);
-
-    //   if(seconds === 0) {
-    //     setseconds(59)
-    //     setminutes(minutes-1)
-
-    //   }
-
-    //   if(minutes === 0 && hours > 0) {
-    //     setminutes(59)
-    //     sethours(hours - 1);
-    //   }
-    //   if(hours === 0) {
-    //     sethours(0);
-    //   }
-
-    // }, 1000)
-
-    // return ()=> {clearInterval(timer);}
 
   }, []);
 

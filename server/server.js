@@ -12,8 +12,8 @@ const http = require('http');
 const url = require('url');
 const server = http.createServer(app);
 const Websocket = require("ws");
-const { Server } = require("socket.io");
 const wss = new Websocket.Server({ port: 8080, clientTracking: true, });
+const { Server } = require("socket.io");
 const IO = new Server(server, {
     cors: {
         origin: ["http://localhost:3000", "ws://localhost:3000"]
@@ -273,6 +273,15 @@ app.get('/login', (req, res) => {
     }
 });
 
+app.get('/About', (req, res) => {
+    if (req.session.user) {
+        res.send({ LoggedIn: true });
+    }
+    else {
+        res.send({ LoggedIn: false });
+    }
+});
+
 app.get('/Mainpage', (req, res) => {
 
     if (req.session.user) {
@@ -365,16 +374,11 @@ function heartbeat() {
 }
 wss.on('connection', (ws, req) => {
 
-    console.log("Client connected");
     let pathname = url.parse(req.url);
-
-    console.log(pathname.path.substring(1));
-
     ws.isAlive = true;
     ws.id = pathname.path.substring(1);
     ws.status = false;
     ws.time;
-    ws.timerstatus = false;
     ws.timer;
     ws.futureTime = 0;
 
@@ -383,12 +387,7 @@ wss.on('connection', (ws, req) => {
     ws.on('pong', heartbeat);
 
     ws.on('message', message => {
-        // if (message.type === "utf8") {
-        console.log("Received Message: " + message);
-        // let msg = JSON.parse(message.utf8Data)
         let msg;
-
-
         try {
             msg = JSON.parse(message)
         }
@@ -397,44 +396,22 @@ wss.on('connection', (ws, req) => {
             return
         }
 
-
         if (msg.status == 0) {
             ws.status = false;
-            console.log("LED1: " + ws.status);
             ws.futureTime = 0;
             clearTimeout(ws.timer);
             
         }
         else if (msg.status == 1) {
             ws.status = true;
-            console.log("LED1: " + ws.status);
-            
-
+    
         }
         else {
             ws.send("Invalid message");
         }
-
-      
         IO.emit("ledstate", { Message: ESPArray() });
-
     });
 })
-
-app.use('/', express.static('./frontendBuild/'));
-
-app.all('*', function (req, res, next) {
-    try {
-        res
-            .status(404)
-            .sendFile(
-                normalize('./frontendBuild/index.html')
-            );
-    } catch (error) {
-        console.log(error);
-    }
-    // next(); // pass control to the next handler
-});
 
 const interval = setInterval(function ping() {
     wss.clients.forEach(function each(ws) {
@@ -468,6 +445,24 @@ IO.on('connection', (socket) => {
     });
 
 });
+
+
+
+app.use('/', express.static('./frontendBuild/'));
+
+app.all('*', function (req, res, next) {
+    try {
+        res
+            .status(404)
+            .sendFile(
+                normalize('./frontendBuild/index.html')
+            );
+    } catch (error) {
+        console.log(error);
+    }
+    // next(); // pass control to the next handler
+});
+
 
 
 server.listen(3001, () => {
