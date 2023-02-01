@@ -2,10 +2,7 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import Timer from "./timer";
-
-
 
 const Mainpage = () => {
 
@@ -14,6 +11,8 @@ const Mainpage = () => {
   const [hours, sethours] = useState(5);
   const [minutes, setminutes] = useState(6);
   const [seconds, setseconds] = useState(9);
+  const [stopped, setstopper] = useState<boolean | undefined>(true);
+  
 
   const navigate = useNavigate();
   const Light = false;
@@ -103,7 +102,7 @@ const Mainpage = () => {
   }
 
 
-const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Backspace']
+const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
 
 
   function Logout() {
@@ -116,8 +115,13 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
       }
     });
   }
-  var emailCheck = /^[^a-z][0-9]+$/;
  
+ const StopBut = () => {
+  setstopper(!stopped);
+  
+ };
+
+
 
   function setTime(ESP: string) {
     Axios.post("http://localhost:3001/time", {ledhours: hours, ledminutes: minutes, ESPName: ESP}).then((Response) => {
@@ -126,6 +130,11 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
 
     });
   }
+
+
+
+
+  
   return (
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
       <nav className="bg-white border-gray-200 px-2 sm:pl-5 py-2.5 rounded">
@@ -224,33 +233,56 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
           </div>
           <div className="flex  flex-col">
           <span className="text-xl self-center">{light.name}</span>
-          <form action="flex flex-row">
-          <label className="">
-            <input type="number" placeholder="00" max="23" min="0" id="num" name="num" 
-           onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
-              return  evt.key
+          <div className="flex justify-center">
+          <label className="EM ">
+            <input type="number" placeholder="00" max="23" min="0" id="num" name={light.name} maxLength={2}
+           onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
+              
            } else {
 
             evt.preventDefault()
            }
           }}
-          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
-          className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
-            :
-            <input type="number" placeholder="00" max="59" min="1"  id="num2" name="num2" 
-             onKeyDown={ (evt) => {if(allowedNum.includes(evt.key)){
+          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2)) 
+          if (event.target.value.length >= 2){
+            (event.target.nextElementSibling?.nextElementSibling as HTMLElement)?.focus()
+          }}}
+          className="focus:ring-0 appearance-none  border-none focus:outline-none p-0 NumericEntry w-5 text-right" required></input>
+
+            <span>:</span>
+
+            <input type="number" placeholder="00" max="59" min="1"  id="num2" name={light.name + '2'} 
+             onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
               return  evt.key
            } else {
 
             evt.preventDefault()
            }
+         
           }}
-              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))}} 
-              className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
-       
+              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))
+                if ((event.target as HTMLInputElement).value.length === 0){
+                  (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
+                }}} 
+              className="NumericEntry focus:ring-0 appearance-none border-none focus:outline-none w-5 p-0" required></input>
+       <button  onClick={StopBut} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+
+       </button>
           </label>
-          <button>butoon</button>
-          </form>
+          
+          </div>
+                <div className="self-center">
+                  <span>00:00</span>
+                    <button onClick={StopBut} className="">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14.5" fill="currentColor" className="w-4 h-4">
+                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                      </svg>
+                  </button>
+                </div>
+
           </div>
           
           <div className="grid col-1 gap-y-3 mr-4">
@@ -271,6 +303,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
             disabled={light.on ? false : true}>
             Turn off
           </button>
+                
           </div>
           
           </div>
@@ -284,7 +317,7 @@ const allowedNum = ['0','1','2', '3', '4','5','6','7', '8', '9', 'Delete', 'Back
      
       <div className="flex-grow">
       </div>
-      <span>logged in as:{}</span>
+      <span className="ml-3">logged in as:{}</span>
       
       
        

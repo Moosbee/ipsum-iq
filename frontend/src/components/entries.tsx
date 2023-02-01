@@ -42,16 +42,7 @@ const Entries = () => {
         });
     }, [querys]);
 
-    function ClearDB () {
-      Axios.post("http://localhost:3001/clear").then((Response) => {
-        if(Response.data.LoggedIn) {
-          navigate("/entries");
-        }
-        else {
-          navigate("/");
-        }
-      })
-    }
+   
     function Logout() {
       Axios.post("http://localhost:3001/logout").then((Response) => {
   
@@ -69,7 +60,7 @@ const Entries = () => {
         <div className="flex flex-wrap items-center justify-between ">
           <a href="Mainpage" className="">
             <img
-              src="logoipsum.png"
+              src="LogoIpsum.png"
               className="h-6 sm:h-9"
               alt="Ipsum|IQ Logo"
             />

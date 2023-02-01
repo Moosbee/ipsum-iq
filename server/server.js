@@ -19,8 +19,19 @@ const IO = new Server(server, {
     }
 });
 
+let ESPArray = [{
 
-let ESPArray = () => {
+name: 'Wohnzimmer',
+on: false,
+},
+{
+
+    name: 'Schlafzimmer',
+    on: false,
+    },
+
+]
+/* let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
@@ -29,7 +40,7 @@ let ESPArray = () => {
         
     })
     return ESPArray;
-}
+} */
 
 
 const mysql = require('mysql2/promise');
@@ -149,7 +160,7 @@ app.post('/entries', async (req, res) => {
         let licht = req.body.ledname;
         let status;
 
-        let array = ESPArray();
+        let array = ESPArray;
 
         for (let i = 0; i < array.length; i++) {
 
@@ -350,7 +361,7 @@ wss.on('connection', (ws, req) => {
             ws.send("Invalid message");
         }
 
-        IO.emit("ledstate", { Message: ESPArray() });
+        IO.emit("ledstate", { Message: ESPArray });
 
     });
 })
@@ -371,7 +382,7 @@ const interval = setInterval(function ping() {
   wss.on("close", function close() {
     console.log("client disconnected");
     clearInterval(interval);
-    IO.emit("ledstate", { Message: ESPArray() });
+    IO.emit("ledstate", { Message: ESPArray });
 })
 
 //SocketIo Server zu Frontend Code
@@ -380,7 +391,7 @@ IO.on('connection', (socket) => {
 
     console.log('a user connected');
 
-    socket.emit("ledstate", { Message: ESPArray() });
+    socket.emit("ledstate", { Message: ESPArray });
 
     socket.on('disconnect', () => {
         console.log('user disconnected');

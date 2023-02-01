@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 
 const Querylist = () => {
-
+    const navigate = useNavigate();
     const names = ["Moruk", "el", "Ehemst"];
     Axios.defaults.withCredentials = true;
     const [querys, setQuerys] = useState<any[]>([]);
@@ -27,7 +27,16 @@ const Querylist = () => {
         });
     }, [querys]);
 
-
+    function ClearDB () {
+        Axios.post("http://localhost:3001/clear").then((Response) => {
+          if(Response.data.LoggedIn) {
+            navigate("/entries");
+          }
+          else {
+            navigate("/");
+          }
+        })
+      }
 
 
     return (
@@ -91,7 +100,7 @@ const Querylist = () => {
                     {/* ned fertig!!!!! */}
         <div className='mt-4 flex justify-center'>
 
-                <button className='h-34 cursor-pointer py-2 px-4 overflow-hidden text-md font-medium text-gray-900 
+                <button onClick={ClearDB} className='h-34 cursor-pointer py-2 px-4 overflow-hidden text-md font-medium text-gray-900 
                                 rounded-xl focus:ring-4 focus:outline-none bg-white'>
                     <div className='flex'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-1">
