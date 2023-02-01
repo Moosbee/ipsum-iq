@@ -46,7 +46,7 @@ const connection = mysql.createConnection(connInfo);
 
 app.use(cookieParser())
 app.use(session({
-    secret: 'secretkey',
+    secret: 'aSAieSJfieimnfsiosI',
     cookie: { maxAge: 1000 * 60 * 10 },
     saveUninitialized: false,
     resave: false,
