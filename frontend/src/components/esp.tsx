@@ -12,7 +12,7 @@ interface ESPProps {
 
 const ESP: React.FC<ESPProps> = ({light}) => {
 
-    const allowedNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Delete', 'Backspace']
+    
     const navigate = useNavigate();
     const [isActive, setActive] = useState<boolean | undefined>(false);
     const [hoursServer, sethoursServer] = useState(0)
@@ -20,7 +20,15 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     const [hours, sethours] = useState(0)
     const [minutes, setminutes] = useState(0)
     const [valreset, setvalreset] = useState(false);
-    
+    const [stopped, setstopper] = useState<boolean | undefined>(true);
+
+    const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
+
+        const StopBut = () => {
+        setstopper(!stopped);
+        
+        };
+
 
     function InsertIntoDB(name: string) {
         Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
@@ -69,74 +77,95 @@ const ESP: React.FC<ESPProps> = ({light}) => {
 
         return (
             <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
-                <div className="flex justify-between h-full items-center">
-                    <div className="-mr-6 -ml-2">
-                        <button type="button" onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}>
-                            <img
-                                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
-                                id="bulbbnt"
-                                alt={light.on ? "bulb_on" : "bulb_off"}
-                                className="sm:h-44"
-                            />
-                        </button>
-                    </div>
-                    <div className="flex  flex-col">
-                        <span className="text-xl self-center">{light.name}</span>
-                     
-                        <label className="">
-                            <input type="number" placeholder="00" max="23" min="0" id="num" name="num"
-                                onKeyDown={(evt) => {
-                                    if (allowedNum.includes(evt.key)) {
+            <div className="flex justify-between h-full items-center">
+              <div className="-mr-6 -ml-2">
+              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}>
+              <img
+                src={light.on ? "bulb_on.svg" : "bulb_off.svg"}
+                id="bulbbnt"
+                alt={light.on ? "bulb_on" : "bulb_off"}
+                className="sm:h-44"
+                />
+              </button>
+          </div>
+          <div className="flex  flex-col">
+          <span className="text-xl self-center">{light.name}</span>
+          <div className="flex justify-center">
+          <label className="EM ">
+            <input type="number" placeholder="00" max="23" min="0" id="num" name={light.name} maxLength={2}
+           onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
+              
+           } else {
 
-                                        return evt.key
-                                    } else {
+            evt.preventDefault()
+           }
+          }}
+          onChange={(event) => {(event.target.value = event.target.value.slice(0, 2)) 
+          if (event.target.value.length >= 2){
+            (event.target.nextElementSibling?.nextElementSibling as HTMLElement)?.focus()
+          }}}
+          className="focus:ring-0 appearance-none  border-none focus:outline-none p-0 NumericEntry w-5 text-right" required></input>
 
-                                        evt.preventDefault()
-                                    }
-                                }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); sethours(event.target.value) }}
-                                className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
-                            :
-                            <input type="number" placeholder="00" max="59" min="1" id="num2" name="num2"
-                                onKeyDown={(evt) => {
-                                    if (allowedNum.includes(evt.key)) {
+            <span>:</span>
 
-                                        return evt.key
-                                    } else {
+            <input type="number" placeholder="00" max="59" min="1"  id="num2" name={light.name + '2'} 
+             onKeyDown={ (evt) => {if(allowedNum.includes(evt.keyCode)){
+              return  evt.key
+           } else {
 
-                                        evt.preventDefault()
-                                    }
-                                }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); setminutes(event.target.value) }}
-                                className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
+            evt.preventDefault()
+           }
+         
+          }}
+              onChange={(event) => {(event.target.value = event.target.value.slice(0, 2))
+                if ((event.target as HTMLInputElement).value.length === 0){
+                  (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
+                }}} 
+              className="NumericEntry focus:ring-0 appearance-none border-none focus:outline-none w-5 p-0" required></input>
+       <button  onClick={StopBut} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
 
-                        </label>
-                        <button onClick={() => { setTime(light.name, light.on) }}>butoon</button>
-                        <button onClick={()=> {ClearTimer(light.name)}}>canceel</button>
-                             
-                    </div>
+       </button>
+          </label>
+          
+          </div>
+                <div className="self-center">
+                  <span><Timer futureTime={light.futureTime} /></span>
+                    <button onClick={StopBut} className="">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14.5" fill="currentColor" className="w-4 h-4">
+                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                      </svg>
+                  </button>
+                  
+                </div>
 
-                    <div className="grid col-1 gap-y-3 mr-4">
-                        <button
-                            onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}
-                            id="btn1"
-                            className={light.on ? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
-                                : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
-                            disabled={light.on ? true : false}>
-                            Turn On
-                        </button>
+          </div>
+          
+          <div className="grid col-1 gap-y-3 mr-4">
+          <button
+            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            id="btn1"
+            className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
+            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
+            disabled={light.on ? true : false}>
+            Turn On
+          </button>
 
-                        <button
-                            onClick={() => { SetLightStatus(light.name); InsertIntoDB(light.name) }}
-                            id="btn2"
-                            className={light.on ? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
-                                : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
-                            disabled={light.on ? false : true}>
-                            Turn off
-                        </button>
-                    </div>
-                            {light.futureTime}
-                    <Timer futureTime={light.futureTime} />
+           <button
+            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            id="btn2"
+            className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
+            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
+            disabled={light.on ? false : true}>
+            Turn off
+          </button>
+                
+          </div>
+          
+                            
+                    
                 </div>
             </div>
 
