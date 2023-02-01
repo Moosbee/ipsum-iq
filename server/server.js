@@ -13,7 +13,7 @@ const url = require('url');
 const server = http.createServer(app);
 const Websocket = require("ws");
 const { Server } = require("socket.io");
-const wss = new Websocket.Server({ port: 8080, clientTracking: true,  });
+const wss = new Websocket.Server({ port: 8080, clientTracking: true, });
 const IO = new Server(server, {
     cors: {
         origin: ["http://localhost:3000", "ws://localhost:3000"]
@@ -25,10 +25,10 @@ const IO = new Server(server, {
 let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
-        if(ws.isAlive) {
+        if (ws.isAlive) {
             ESPArray.push({ name: ws.id, on: ws.status, time: ws.time, futureTime: ws.futureTime });
         }
-        
+
     })
     return ESPArray;
 }
@@ -62,15 +62,15 @@ app.use(cors({
     credentials: true
 }));
 
-function ClearTime (name) {
+function ClearTime(name) {
 
     wss.clients.forEach(ws => {
-        if(ws.id == name) {
+        if (ws.id == name) {
             console.log("mrk timer cancel")
             clearTimeout(ws.timer);
             ws.futureTime = 0;
-            IO.emit("ledstate", {Message: ESPArray()})
-            
+            IO.emit("ledstate", { Message: ESPArray() })
+
         }
     })
 }
@@ -83,79 +83,78 @@ app.post('/time', (req, res) => {
     let date = new Date().getTime();
 
     console.log("moruk test")
-    if(req.session.user) {
-       
+    if (req.session.user) {
+
         wss.clients.forEach(ws => {
 
-            if(ws.id == req.body.ESPName) {
-                
+            if (ws.id == req.body.ESPName) {
+
                 ws.time = (hours * 60 + minutes) * 60 * 1000
                 console.log("HOURS " + hours);
-                
-                
-                ws.futureTime = date + ws.time;
-                
-                ws.timerstatus = !ws.timerstatus;
-                // if(ws.timerstatus) {
 
-                    ws.timer = setTimeout(()=> {
+
+                ws.futureTime = date + ws.time;
+
+                if(ws.status == false) {
+                    ws.futureTime = 0;
+                    IO.emit("ledstate", { Message: ESPArray() })
+                }
+                else {
+                    ws.timer = setTimeout(() => {
 
                         console.log("test pls geh thx");
-
-
+    
+    
                         ws.send("off");
-                        
+    
                         ws.timestatus = false;
                     }, ws.time)
+                    IO.emit("ledstate", { Message: ESPArray() })
+                }
+                
 
-                    
 
-                    IO.emit("ledstate", {Message: ESPArray()})
-                // }
-                // else {
-                //     clearTimeout(ws.timer);
-                //     console.log("timer cleared");
-                    
-                // }
 
                 
+
+
             }
             else {
-                
+
             }
 
         })
-    
-        res.send({LoggedIn: true})
+
+        res.send({ LoggedIn: true })
     }
 
     else {
-        res.send({LoggedIn: false});
-    } 
+        res.send({ LoggedIn: false });
+    }
 });
 
 app.post('/timeclear', (req, res) => {
 
-    if(req.session.user) {
+    if (req.session.user) {
         ClearTime(req.body.ESPName);
-        res.send({LoggedIn: true});
+        res.send({ LoggedIn: true });
     }
     else {
-        res.send({LoggedIn: false});
+        res.send({ LoggedIn: false });
     }
 })
 app.post("/clear", async (req, res) => {
 
-    if(req.session.user) {
+    if (req.session.user) {
 
         let an = await (await connection).query("DELETE FROM eintraege");
         console.log(an);
-         res.send({LoggedIn: true});
-        
-          
+        res.send({ LoggedIn: true });
+
+
     }
     else {
-        res.send({LoggedIn: false});
+        res.send({ LoggedIn: false });
     }
 });
 
@@ -229,7 +228,7 @@ app.post('/entries', async (req, res) => {
         // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
         (await connection).query(InsertQuery);
 
-        res.send({LoggedIn: true});
+        res.send({ LoggedIn: true });
 
     }
     else {
@@ -244,12 +243,12 @@ app.post('/state', (req, res) => {
         let name = req.body.ledname;
 
         wss.clients.forEach(ws => {
-            if(name == ws.id) {
+            if (name == ws.id) {
                 ws.send("toggle");
             }
         })
 
-        res.send({LoggedIn: true});
+        res.send({ LoggedIn: true });
     }
     else {
 
@@ -324,7 +323,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][0].username;
             res.send({ message: req.session.user });
             console.log("Admin Cookie set");
-            
+
         }
 
         else if (isUser && isUserPassword) {
@@ -332,7 +331,7 @@ app.post('/login', async (req, res) => {
             req.session.user = an[0][1].username;
             res.send({ message: req.session.user });
             console.log("User Cookie set");
-            
+
         }
 
         else {
@@ -353,13 +352,13 @@ app.post('/logout', (req, res) => {
         })
     }
     else {
-        res.send({LoggedOut: false});
+        res.send({ LoggedOut: false });
     }
 });
 
 //Websocket Server -> ESP Code
 
-function heartbeat () {
+function heartbeat() {
     this.isAlive = true;
 }
 wss.on('connection', (ws, req) => {
@@ -378,7 +377,7 @@ wss.on('connection', (ws, req) => {
     ws.futureTime = 0;
 
     IO.emit("ledstate", { Message: ESPArray() });
-    
+
     ws.on('pong', heartbeat);
 
     ws.on('message', message => {
@@ -400,18 +399,21 @@ wss.on('connection', (ws, req) => {
         if (msg.status == 0) {
             ws.status = false;
             console.log("LED1: " + ws.status);
-
+            ws.futureTime = 0;
+            clearTimeout(ws.timer);
+            
         }
         else if (msg.status == 1) {
             ws.status = true;
             console.log("LED1: " + ws.status);
-
+            
 
         }
         else {
             ws.send("Invalid message");
         }
 
+      
         IO.emit("ledstate", { Message: ESPArray() });
 
     });
@@ -421,31 +423,31 @@ app.use('/', express.static('./frontendBuild/'));
 
 app.all('*', function (req, res, next) {
     try {
-      res
-        .status(404)
-        .sendFile(
-          normalize('./frontendBuild/index.html')
-        );
+        res
+            .status(404)
+            .sendFile(
+                normalize('./frontendBuild/index.html')
+            );
     } catch (error) {
-      console.log(error);
+        console.log(error);
     }
     // next(); // pass control to the next handler
-  });
+});
 
 const interval = setInterval(function ping() {
     wss.clients.forEach(function each(ws) {
-      if (ws.isAlive === false) {
-        return ws.terminate();
-    }
-  
-      ws.isAlive = false;
-      ws.ping();
+        if (ws.isAlive === false) {
+            return ws.terminate();
+        }
+
+        ws.isAlive = false;
+        ws.ping();
     });
 
-  }, 30000 * 2 * 5);
+}, 30000 * 2 * 5);
 
-  
-  wss.on("close", function close() {
+
+wss.on("close", function close() {
     console.log("client disconnected");
     clearInterval(interval);
     IO.emit("ledstate", { Message: ESPArray() });
