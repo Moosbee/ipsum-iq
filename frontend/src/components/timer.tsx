@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Axios from 'axios';
 import { BrowserRouter as Router, Navigate, Route } from "react-router-dom";
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import moment, { min } from 'moment';
+
 import { AnyMxRecord } from 'dns';
 import { count } from 'console';
 import Clock from './clock';
@@ -69,13 +69,13 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
  
   return (
 
-    <div className="App">
+    
       <Clock
         timerHours={timerHours}
         timerMinutes={timerMinutes}
         timerSeconds={timerSeconds}
       />
-    </div>
+    
 
 
   )

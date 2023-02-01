@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 import ESP from "./esp";
 
 
+import Timer from "./timer";
 
 const Mainpage = () => {
 
@@ -12,6 +13,8 @@ const Mainpage = () => {
   const [lightstate, lighttoggle] = useState<{ name: string, on: boolean, hours: number, minutes: number, seconds: number }[]>([]);
   const [hours, sethours] = useState(0)
   const [minutes, setminutes] = useState(0)
+  const [stopped, setstopper] = useState<boolean | undefined>(true);
+  
 
   const navigate = useNavigate();
   const Light = false;
@@ -103,7 +106,7 @@ const Mainpage = () => {
   }
 
 
-  const allowedNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Delete', 'Backspace']
+const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
 
 
   function Logout() {
@@ -116,6 +119,12 @@ const Mainpage = () => {
       }
     });
   }
+ 
+ const StopBut = () => {
+  setstopper(!stopped);
+  
+ };
+
 
 
   function setTime(ESP: string, statusled: boolean) {
@@ -126,6 +135,10 @@ const Mainpage = () => {
 
   }
 
+
+
+
+  
   return (
 
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
@@ -217,6 +230,10 @@ const Mainpage = () => {
       </div>
       <div className="flex-grow">
       </div>
+      <span className="ml-3">logged in as:{}</span>
+      
+      
+       
     </div>
 
   );
