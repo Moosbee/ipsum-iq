@@ -19,6 +19,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     const [minutesServer, setminutesServer] = useState(0)
     const [hours, sethours] = useState(0)
     const [minutes, setminutes] = useState(0)
+    const [valreset, setvalreset] = useState(false);
+    
 
     function InsertIntoDB(name: string) {
         Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
@@ -48,14 +50,20 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     }
 
     function setTime(ESP: string, statusled: boolean) {
-        Axios.post("http://localhost:3001/time", { ledhours: hoursServer, ledminutes: minutesServer, ESPName: ESP, status: statusled }).then((Response) => {
+        Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
 
-            sethours(hoursServer);
-            setminutes(minutesServer);
-            console.log(hoursServer)
-            console.log(minutesServer);
+            if(Response.data.futureTime) {
 
+            }
         });
+
+    
+    }
+
+    function ClearTimer(ESP: string) {
+        Axios.post("http://localhost:3001/timeclear", {ESPName: ESP}).then((Response) => {
+
+        })
     }
         const names = ["Moruk", "el", "Ehemst"];
 
@@ -86,7 +94,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                                         evt.preventDefault()
                                     }
                                 }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); sethoursServer(event.target.value) }}
+                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); sethours(event.target.value) }}
                                 className="focus:ring-0 appearance-none  border-none focus:outline-none bg-slate-400" required></input>
                             :
                             <input type="number" placeholder="00" max="59" min="1" id="num2" name="num2"
@@ -99,11 +107,12 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                                         evt.preventDefault()
                                     }
                                 }}
-                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); setminutesServer(event.target.value) }}
+                                onChange={(event: any) => { (event.target.value = event.target.value.slice(0, 2)); setminutes(event.target.value) }}
                                 className="focus:ring-0 appearance-none  border-none focus:outline-none" required></input>
 
                         </label>
                         <button onClick={() => { setTime(light.name, light.on) }}>butoon</button>
+                        <button onClick={()=> {ClearTimer(light.name)}}>canceel</button>
                              
                     </div>
 
@@ -126,8 +135,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                             Turn off
                         </button>
                     </div>
-
-                    <Timer hours={hours} minutes={minutes} />
+                            {light.futureTime}
+                    <Timer futureTime={light.futureTime} />
                 </div>
             </div>
 

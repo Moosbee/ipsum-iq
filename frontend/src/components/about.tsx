@@ -48,7 +48,7 @@ const About =() =>  {
         <div className="flex flex-wrap items-center justify-between ">
           <a href="Mainpage" className="">
             <img
-              src="logoipsum.png"
+              src="LogoIpsum.png"
               className="h-6 sm:h-9"
               alt="Ipsum|IQ Logo"
             />
@@ -124,9 +124,9 @@ const About =() =>  {
       </nav>
       <div className=""></div>
       <div className=" mt-3 flex justify-center w-max-11/12 ">
-   <div className="resize border-2 overflow-auto w-8/12 bg-white ">
+   <div className="resize border-2 overflow-auto sm:w-6/12 w-11/12 bigH">
     
-{/* <iframe title="Pflichtenheft" src="Plichtenheft.pdf" className="w-full h-full"></iframe> */}
+<iframe title="Pflichtenheft" src="Plichtenheft.pdf" className="w-full h-full"></iframe> 
 </div>
 </div>
       <div className="flex-grow">

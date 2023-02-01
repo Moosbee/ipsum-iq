@@ -6,6 +6,8 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const store = new session.MemoryStore();
 const cors = require('cors');
+const mysql = require('mysql2/promise');
+const { clearInterval } = require('timers');
 const http = require('http');
 const url = require('url');
 const server = http.createServer(app);
@@ -19,23 +21,28 @@ const IO = new Server(server, {
     }
 });
 
+let ESPArray = [{
 
-let ESPArray = () => {
+name: 'Wohnzimmer',
+on: false,
+},
+{
+
+    name: 'Schlafzimmer',
+    on: false,
+    },
+
+]
+/* let ESPArray = () => {
     let ESPArray = [];
     wss.clients.forEach(ws => {
         if(ws.isAlive) {
-            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time });
+            ESPArray.push({ name: ws.id, on: ws.status, time: ws.time, futureTime: ws.futureTime });
         }
         
     })
     return ESPArray;
-}
-
-
-
-const mysql = require('mysql2/promise');
-const { clearInterval } = require('timers');
-
+} */
 
 const connInfo = {
     host: "127.0.0.1",
@@ -66,42 +73,71 @@ app.use(cors({
     credentials: true
 }));
 
+function ClearTime (name) {
 
+    wss.clients.forEach(ws => {
+        if(ws.id == name) {
+            console.log("mrk timer cancel")
+            clearTimeout(ws.timer);
+            ws.futureTime = 0;
+            IO.emit("ledstate", {Message: ESPArray()})
+            
+        }
+    })
+}
 
 
 app.post('/time', (req, res) => {
 
+    let hours = +req.body.ledhours;
+    let minutes = +req.body.ledminutes;
+    let date = new Date().getTime();
+
     console.log("moruk test")
     if(req.session.user) {
        
-        let hours = req.body.ledhours;
-        let minutes = req.body.ledminutes;
-
-        console.log(hours)
-        console.log(minutes)
-
         wss.clients.forEach(ws => {
-            
+
             if(ws.id == req.body.ESPName) {
-                ws.time = (hours + minutes/60) * 3600000;
+                
+                ws.time = (hours * 60 + minutes) * 60 * 1000
+                console.log("HOURS " + hours);
+                
+                
+                ws.futureTime = date + ws.time;
                 
                 ws.timerstatus = !ws.timerstatus;
-                if(ws.timerstatus) {
-                    const timer = setTimeout(()=>{
+                // if(ws.timerstatus) {
 
-                        console.log("test pls geh txt");
-                        ws.send("off")
-                        ws.timerstatus = false;
-                    }, ws.time);
-                }
-                else {
-                    ws.timerstatus = true;
-                }                
+                    ws.timer = setTimeout(()=> {
+
+                        console.log("test pls geh thx");
+
+
+                        ws.send("off");
+                        
+                        ws.timestatus = false;
+                    }, ws.time)
+
+                    
+
+                    IO.emit("ledstate", {Message: ESPArray()})
+                // }
+                // else {
+                //     clearTimeout(ws.timer);
+                //     console.log("timer cleared");
+                    
+                // }
+
+                
             }
+            else {
+                
+            }
+
         })
-       
-        res.send({test: true});
-        
+    
+        res.send({LoggedIn: true})
     }
 
     else {
@@ -109,6 +145,16 @@ app.post('/time', (req, res) => {
     } 
 });
 
+app.post('/timeclear', (req, res) => {
+
+    if(req.session.user) {
+        ClearTime(req.body.ESPName);
+        res.send({LoggedIn: true});
+    }
+    else {
+        res.send({LoggedIn: false});
+    }
+})
 app.post("/clear", async (req, res) => {
 
     if(req.session.user) {
@@ -171,7 +217,7 @@ app.post('/entries', async (req, res) => {
         let licht = req.body.ledname;
         let status;
 
-        let array = ESPArray();
+        let array = ESPArray;
 
         for (let i = 0; i < array.length; i++) {
 
@@ -339,6 +385,8 @@ wss.on('connection', (ws, req) => {
     ws.status = false;
     ws.time;
     ws.timerstatus = false;
+    ws.timer;
+    ws.futureTime = 0;
 
     IO.emit("ledstate", { Message: ESPArray() });
     
@@ -375,7 +423,7 @@ wss.on('connection', (ws, req) => {
             ws.send("Invalid message");
         }
 
-        IO.emit("ledstate", { Message: ESPArray() });
+        IO.emit("ledstate", { Message: ESPArray });
 
     });
 })
@@ -411,7 +459,7 @@ const interval = setInterval(function ping() {
   wss.on("close", function close() {
     console.log("client disconnected");
     clearInterval(interval);
-    IO.emit("ledstate", { Message: ESPArray() });
+    IO.emit("ledstate", { Message: ESPArray });
 })
 
 //SocketIo Server zu Frontend Code
@@ -420,7 +468,7 @@ IO.on('connection', (socket) => {
 
     console.log('a user connected');
 
-    socket.emit("ledstate", { Message: ESPArray() });
+    socket.emit("ledstate", { Message: ESPArray });
 
     socket.on('disconnect', () => {
         console.log('user disconnected');

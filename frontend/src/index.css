@@ -28,3 +28,35 @@ code {
     -moz-appearance:textfield; /* Firefox */
 }
 }
+@-moz-document url-prefix() {
+  .NumericEntry {
+    
+    width: 4.5%;
+    
+  
+  
+  }
+  
+  
+  
+  
+  .GeckoAesthetic {
+    
+  
+  }
+  .EM {
+    
+    display: flex;
+    justify-content: center;
+    
+  }
+  
+  }
+  .bigH {
+
+    height: 39rem;
+
+
+  }
+
+  

@@ -5,70 +5,80 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import moment, { min } from 'moment';
 import { AnyMxRecord } from 'dns';
 import { count } from 'console';
+import Clock from './clock';
 
 interface TimerProps {
-    hours: any;
-    minutes: any;
-    // end: any;
-  
+
+  futureTime: any;
+  // end: any;
+
 }
 
 
-const startDate = new Date();
 
-const Timer: React.FC<TimerProps> = ({hours, minutes}) => {
+
+const Timer: React.FC<TimerProps> = ({ futureTime }) => {
 
   const names = ["Moruk", "el", "Ehemst"];
 
+  let timerHours;
+  let timerMinutes;
+  let timerSeconds;
+  const [time, setTime] = useState(Date.now());
 
 
-    const[rHour, setRHour] = useState(hours);
-    const[rMin, setRMin] = useState(minutes);
-    const[rSec, setRSec] = useState(0);
 
+  const now = new Date().getTime();
+
+  const distance = futureTime - now;
+
+  console.log("DISTANCE " + distance);
+
+  const hours = Math.floor(
+    (distance % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)
+  );
+ 
+  const minutes = Math.floor((distance % (60 * 60 * 1000)) / (1000 * 60));
+  const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+
+  console.log("MORUK " + distance % (24 * 60 * 60 * 1000) / (1000 * 60 * 60) + " eeeee  " +  hours + "  hours  " + minutes + "  minutes  " + seconds + "  seconds");
+ 
+    // Update Timer
+  
     
+    timerHours = hours;
+    timerMinutes= minutes;
+    timerSeconds= seconds;
 
-  
-    function getTime(){
-
-      const finishHours = startDate.getHours() + hours + startDate.getMinutes() / 60 + minutes + startDate.getSeconds() / 3600;
-      const currentHours =  new Date().getHours() + new Date().getMinutes() / 60 + new Date().getSeconds() / 3600;
-      const remainingHours = finishHours - currentHours;
-  
-      const remainingHour = Math.floor(remainingHours);
-      const remainingMinute = Math.floor((remainingHours - remainingHour) * 60);
-      const remainingSecond = Math.floor(((remainingHours - remainingHour) * 60 - remainingMinute)*60)
-  
-      setRHour(remainingHour);
-      setRMin(remainingMinute);
-      setRSec(remainingSecond);
-      console.log("count")
+    if(timerHours < 0) {
+      timerHours = 0
     }
-  
+    if(timerMinutes < 0) {
+      timerMinutes = 0
+    }
+    if(timerSeconds < 0) {
+      timerSeconds = 0
+    }
+
     useEffect(() => {
-      const i = setInterval(getTime, 1000);
-      return () => clearInterval(i);
-    }, []);  //dependency, if end changes remount
-
-
+      const interval = setInterval(() => setTime(Date.now()), 1000);
+      return () => {
+        clearInterval(interval);
+      };
+    }, []);
+ 
   return (
 
-
-    <div className="timer-container">
-      <div className="numbers">
-        <span className = "num-span">{("0" + rHour).slice(-2)}</span>
-        <span className = "segment">:</span>
-        <span className = "num-span">{("0" + rMin).slice(-2)}</span>
-        <span className = "segment">:</span>
-        <span className = "num-span">{("0" + rSec).slice(-2)}</span>
-      </div>
+    <div className="App">
+      <Clock
+        timerHours={timerHours}
+        timerMinutes={timerMinutes}
+        timerSeconds={timerSeconds}
+      />
     </div>
 
+
   )
-    
-      
-  
-  
 
 
 
