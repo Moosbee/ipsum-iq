@@ -107,7 +107,7 @@ app.post('/time', (req, res) => {
                         console.log("test pls geh thx");
     
     
-                        ws.send("off");
+                        ws.send("toggle");
     
                         ws.timestatus = false;
                     }, ws.time)
@@ -276,7 +276,7 @@ app.get('/login', (req, res) => {
 app.get('/Mainpage', (req, res) => {
 
     if (req.session.user) {
-        res.send({ LoggedIn: true });
+        res.send({ LoggedIn: true, User: req.session.user });
     }
     else {
         res.send({ LoggedIn: false });

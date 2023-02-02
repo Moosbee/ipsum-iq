@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import Timer from "./timer";
 
 interface ESPProps {
-    light: any
+    light: {name: string, on: boolean, time: number, futureTime: number }
+    
 }
 
 
@@ -22,11 +23,31 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     const [valreset, setvalreset] = useState(false);
     const [stopped, setstopper] = useState<boolean | undefined>(true);
 
-    const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46 ]
+    const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46, 9 ]
 
         const StopBut = () => {
         setstopper(!stopped);
         
+        };
+
+    function TimeSubmittable():boolean{
+
+            if(!light.on){
+                return false;
+            };
+            if(light.futureTime < Date.now()){
+            return true
+            }
+            return false;
+        };
+
+        function RunningTime():boolean{
+
+            if(light.futureTime < Date.now()){
+                return true
+                }
+                return false;
+
         };
 
 
@@ -94,6 +115,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
               </button>
           </div>
           <div className="flex  flex-col">
+            <span className=" self-center select-none text-white py-1 mt-4" hidden={RunningTime()}>.</span>
+            
           <span className="text-xl self-center">{light.name}</span>
           <div className="flex justify-center">
           <label className="EM ">
@@ -127,8 +150,8 @@ const ESP: React.FC<ESPProps> = ({light}) => {
                   (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
                 }}} 
               className="NumericEntry focus:ring-0 appearance-none border-none focus:outline-none w-5 p-0" required></input>
-       <button  onClick={() => { setTime(light.name, light.on); StopBut()}} className={(light.on && stopped)?"" : "cursor-not-allowed opacity-25"} disabled={light.on && !stopped}>
-       <svg xmlns="http://www.w3.org/200)0/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+       <button  onClick={() => { setTime(light.name, light.on)}} className={TimeSubmittable()?"" : "cursor-not-allowed opacity-25"} disabled={!TimeSubmittable()}>
+       <svg xmlns="http://www.w3.org/200)0/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 -mb-1">
   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
 </svg>
 
@@ -136,14 +159,19 @@ const ESP: React.FC<ESPProps> = ({light}) => {
           </label>
           
           </div>
-                <div className="self-center">
-                  <span><Timer futureTime={light.futureTime} /></span>
-                    <button onClick={() =>{StopBut(); ClearTimer(light.name)}} className="">
+          
+                <div className="self-center mt-4" hidden={RunningTime()}>
+                    <div className='rounded-lg bg-gray-50 drop-shadow-lg'>
+                        <div className='py-1 pl-3 pr-2'>
+                  <span className='mr-3'><Timer futureTime={light.futureTime} /></span>
+                    <button onClick={() =>{ClearTimer(light.name)}} className="">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14.5" fill="currentColor" className="w-4 h-4">
                       <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                       </svg>
                   </button>
-                  
+                  </div>
+                  </div>
+
                 </div>
 
           </div>
@@ -153,7 +181,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
             onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
             id="btn1"
             className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
-            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-full"}
+            : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-purple-400 rounded-full"}
             disabled={light.on ? true : false}>
             Turn On
           </button>

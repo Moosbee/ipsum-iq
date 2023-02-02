@@ -2,6 +2,8 @@ const WebSocketClient = require("websocket").client;
 
 var client = new WebSocketClient();
 
+let thing = { status: 0 };
+
 const readline = require("readline").createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -23,15 +25,16 @@ client.on("connect", function (connection) {
   });
 
   connection.on("message", function (message) {
-    if(message.utf8Data == "toggle") {
+    if (message.utf8Data == "toggle") {
       console.log("DEINE MUTTER GETOGGELT");
+      thing.status = Math.pow(0, thing.status);
+      connection.sendUTF(JSON.stringify(thing));
     }
   });
   readline.question(`Send something:`, (name) => {
-    
     connection.sendUTF(name);
     readline.close();
   });
 });
 
-client.connect("ws://localhost:8080/ESP2");
+client.connect("ws://localhost:8080/Schlafzimmer");
