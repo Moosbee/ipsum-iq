@@ -47,9 +47,7 @@ const Mainpage = () => {
         navigate("/");
       }
     });
-
     ws();
-    
 
   }, []);
 

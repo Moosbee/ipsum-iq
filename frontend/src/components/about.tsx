@@ -15,7 +15,7 @@ const About =() =>  {
       Axios.defaults.withCredentials = true;
 
       useEffect(() => {
-        Axios.get('http://localhost:3001/login').then((Response) => {
+        Axios.get('http://localhost:3001/About').then((Response) => {
 
         if(Response.data.LoggedIn) {
           
