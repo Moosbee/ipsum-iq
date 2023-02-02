@@ -80,7 +80,7 @@ const Mainpage = () => {
         <div className="flex flex-wrap items-center justify-between ">
           <a href="Mainpage" className="">
             <img
-              src="logoIpsum.png"
+              src="LogoIpsum.png"
               className="h-6 sm:h-9"
               alt="Ipsum|IQ Logo"
             />
