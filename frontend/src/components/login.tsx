@@ -10,13 +10,24 @@ function Login(props: any) {
   const [password, setPassword] = useState("");
   const [LoginStatus, setLoginStatus] = useState("");
   const [isvis, setvis] = useState<boolean | undefined>(false);
-
+  const [msgShow, msgSet] = useState<boolean | undefined>(false);
+  let test: boolean;
   const navigate = useNavigate();
   
   const pasvis = () => { 
     setvis(!isvis);
+    
   };
 
+const msgSwitch = () => {
+  msgSet(false)
+  setTimeout(()=> {
+    msgSet(true)
+
+  }, 4000)
+
+}
+ 
   Axios.defaults.withCredentials = true;
 
   function PostLogin() {
@@ -28,11 +39,16 @@ function Login(props: any) {
         setLoginStatus(Response.data.message);
         if(Response.data.message == "admin" || Response.data.message == "user") {
           navigate("/Mainpage");
+          let test = false;
         }
         
       }
       else {
         setLoginStatus(Response.data[0].username);
+        let test = true;
+
+        
+        
       }
     });
   }
@@ -49,7 +65,8 @@ function Login(props: any) {
       console.log("LOGGED out");
       navigate("/");
     }
-        
+
+    
     });
   }, []);
 
@@ -117,7 +134,7 @@ function Login(props: any) {
             </div>
             <div className=" flex justify-center pt-7">
             
-            <button onClick={PostLogin} className=" cursor-pointer relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 ">
+            <button onClick={() => {PostLogin(); msgSwitch()}} className=" cursor-pointer relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 ">
               <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white rounded-md group-hover:bg-opacity-0"> 
                 Login
                 
@@ -125,7 +142,10 @@ function Login(props: any) {
             </button>
             </div>
             <div className="flex justify-center">
-              <h1>{LoginStatus}</h1>
+              
+              <h1 hidden={msgShow}>{LoginStatus}</h1>
+            
+             
             </div>
 
             </div>
