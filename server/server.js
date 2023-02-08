@@ -236,7 +236,7 @@ app.get('/About', (req, res) => {
 app.get('/Mainpage', (req, res) => {
 
     if (req.session.user) {
-        res.send({ LoggedIn: true });
+        res.send({ LoggedIn: true, User: req.session.user });
     }
     else {
         res.send({ LoggedIn: false });

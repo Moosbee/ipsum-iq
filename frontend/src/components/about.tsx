@@ -2,6 +2,8 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { SHARE_ENV } from "worker_threads";
+import ShowUser from './usershow';
 
 const About =() =>  {
     const [isActive, setActive] = useState<boolean | undefined>(false);
@@ -131,7 +133,7 @@ const About =() =>  {
 </div>
       <div className="flex-grow">
       </div>
-      <span>logged in as:{}</span>
+            <ShowUser />
       
       
        

@@ -37,4 +37,4 @@ client.on("connect", function (connection) {
   });
 });
 
-client.connect("ws://localhost:8080/ESP1");
+client.connect("ws://localhost:8080/Wohnzimmer");

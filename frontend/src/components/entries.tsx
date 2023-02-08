@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Navigate, Route } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import Querylist from './querylist';
+import ShowUser from './usershow';
 
 const Entries = () => {
 
@@ -141,10 +142,7 @@ const Entries = () => {
          <Querylist />
          <div className="flex-grow">
       </div>
-      <span>logged in as:{}</span>
-      
-      
-       
+       <ShowUser />
             </div>
         
         

@@ -21,6 +21,7 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
 
   const names = ["Moruk", "el", "Ehemst"];
 
+  let timerDays;
   let timerHours;
   let timerMinutes;
   let timerSeconds;
@@ -34,9 +35,11 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
 
   console.log("DISTANCE " + distance);
 
+  const days = Math.floor(distance / (24 * 60 * 60 * 1000));
+   
   const hours = Math.floor(
     (distance % (24 * 60 * 60 * 1000)) / (1000 * 60 * 60)
-  );
+  ) +days * 24;
  
   const minutes = Math.floor((distance % (60 * 60 * 1000)) / (1000 * 60));
   const seconds = Math.floor((distance % (60 * 1000)) / 1000);

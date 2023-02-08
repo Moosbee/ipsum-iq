@@ -3,21 +3,19 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import ESP from "./esp";
+import ShowUser from './usershow';
 
 
-import Timer from "./timer";
 
 const Mainpage = () => {
 
   const [isActive, setActive] = useState<boolean | undefined>(false);
-  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean, hours: number, minutes: number, seconds: number }[]>([]);
-  const [hours, sethours] = useState(0)
-  const [minutes, setminutes] = useState(0)
-  const [stopped, setstopper] = useState<boolean | undefined>(true);
+  const [lightstate, lighttoggle] = useState<{ name: string, on: boolean, time: number, futureTime: number }[]>([]);
+
   
 
   const navigate = useNavigate();
-  const Light = false;
+ 
 
   const ws = () => {
     const socket = io("ws://localhost:3001");
@@ -43,6 +41,7 @@ const Mainpage = () => {
       if (Response.data.LoggedIn) {
         console.log("LOGGED IN");
         navigate("/Mainpage");
+
       } else if (!Response.data.LoggedIn) {
         console.log("LOGGED out");
         navigate("/");
@@ -56,33 +55,9 @@ const Mainpage = () => {
 
 
 
-  function InsertIntoDB(name: string) {
-    Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
+ 
 
-      if (Response.data.LoggedIn) {
-
-      }
-      else if (!Response.data.LoggedIn) {
-        console.log("LOGGED out");
-        navigate("/");
-      }
-    });
-  }
-
-  function SetLightStatus(name: string) {
-    Axios.post("http://localhost:3001/state", { ledname: name }).then((Response) => {
-
-      if (Response.data.LoggedIn) {
-
-      }
-
-      else if (!Response.data.LoggedIn) {
-        console.log("LOGGED out");
-        navigate("/");
-      }
-    });
-  }
-
+ 
 
 
 
@@ -98,25 +73,6 @@ const Mainpage = () => {
     });
   }
  
- const StopBut = () => {
-  setstopper(!stopped);
-  
- };
-
-
-
-  function setTime(ESP: string, statusled: boolean) {
-    Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
-
-   
-    });
-
-  }
-
-
-
-
-  
   return (
 
     <div className=" bg-gradient-to-br from-purple-600 to-blue-500 min-h-screen pb-2 flex flex-col">
@@ -124,7 +80,7 @@ const Mainpage = () => {
         <div className="flex flex-wrap items-center justify-between ">
           <a href="Mainpage" className="">
             <img
-              src="logoIpsum.png"
+              src="LogoIpsum.png"
               className="h-6 sm:h-9"
               alt="Ipsum|IQ Logo"
             />
@@ -208,7 +164,7 @@ const Mainpage = () => {
       </div>
       <div className="flex-grow">
       </div>
-      <span className="ml-3">logged in as:{}</span>
+      <ShowUser />
       
       
        
