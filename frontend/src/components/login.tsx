@@ -24,7 +24,7 @@ const msgSwitch = () => {
   setTimeout(()=> {
     msgSet(true)
 
-  }, 4000)
+  }, 3330)
 
 }
  
@@ -102,6 +102,7 @@ const msgSwitch = () => {
                     }}
                     onKeyDown={(e)=>{if (e.key === "Enter") {
                         PostLogin();
+                        msgSwitch();
                     }
                   }
                 }
