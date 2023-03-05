@@ -68,7 +68,6 @@ function ClearTime(name) {
 
     wss.clients.forEach(ws => {
         if (ws.id == name) {
-            console.log("mrk timer cancel")
             clearTimeout(ws.timer);
             ws.futureTime = 0;
             IO.emit("ledstate", { Message: ESPArray() })
@@ -84,19 +83,12 @@ app.post('/time', (req, res) => {
     let minutes = +req.body.ledminutes;
     let date = new Date().getTime();
 
-    console.log("moruk test")
     if (req.session.user) {
-
         wss.clients.forEach(ws => {
-
             if (ws.id == req.body.ESPName) {
-
                 ws.time = (hours * 60 + minutes) * 60 * 1000
-                console.log("HOURS " + hours);
-
-
+        
                 ws.futureTime = date + ws.time;
-
                 if(ws.status == false) {
                     ws.futureTime = 0;
                     IO.emit("ledstate", { Message: ESPArray() })
@@ -104,32 +96,15 @@ app.post('/time', (req, res) => {
                 else {
                     ws.timer = setTimeout(() => {
 
-                        console.log("test pls geh thx");
-    
-    
-                        ws.send("toggle");
-    
-                        ws.timestatus = false;
+                        ws.send("off");
+                       
                     }, ws.time)
                     IO.emit("ledstate", { Message: ESPArray() })
                 }
-                
-
-
-
-                
-
-
             }
-            else {
-
-            }
-
         })
-
         res.send({ LoggedIn: true })
     }
-
     else {
         res.send({ LoggedIn: false });
     }
@@ -180,26 +155,13 @@ app.get('/entries', async (req, res) => {
 
 app.post('/entries', async (req, res) => {
     if (req.session.user) {
-
         let date_ob = new Date();
-
         let day = ("0" + date_ob.getDate()).slice(-2);
-
-
         let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-
-
         let year = date_ob.getFullYear();
-
-
         let hours = date_ob.getHours();
-
-
         let minutes = ("0" + (date_ob.getMinutes() + 1)).slice(-2);
-
-
         let seconds = date_ob.getSeconds();
-
         let date = day + "-" + month + "-" + year;
         let time = hours + ":" + minutes;
 
@@ -207,31 +169,20 @@ app.post('/entries', async (req, res) => {
         let licht = req.body.ledname;
         let status;
 
-        let array = ESPArray();
-
-        for (let i = 0; i < array.length; i++) {
-
-            if (req.body.ledname == array[i].name) {
-
-                array[i].on = !array[i].on
-
-                if (array[i].on) {
+        wss.clients.forEach(ws=> {
+            if (req.body.ledname == ws.id) {
+                if (ws.status) {
                     status = "an";
-
                 }
-                else if (array[i].on == false) {
+                else if (ws.status == false) {
                     status = "aus";
                 }
-
             }
-        }
+        })
 
         const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
-        // let an = await (await connection).query('INSERT INTO eintraege (Datum, Zeitpunkt, licht, user, Status) VALUES ("${date}", "${time}", "${licht}", "${user}", "${status}")');
         (await connection).query(InsertQuery);
-
         res.send({ LoggedIn: true });
-
     }
     else {
         res.send({ LoggedIn: false });
@@ -323,31 +274,45 @@ app.post('/users', async (req, res) => {
 app.post('/login', async (req, res) => {
 
     let an = await (await connection).query("SELECT username, password FROM user");
-    let isAdmin = req.body.name === an[0][0].username;
-    let isAdminPassword = await bcrypt.compare(req.body.password, an[0][0].password);
-    let isUser = req.body.name === an[0][1].username;
-    let isUserPassword = await bcrypt.compare(req.body.password, an[0][1].password);
+
+
+    let isUser;
+    let isPassword;
+    let login;
 
     if (an) {
-        if (isAdmin && isAdminPassword) {
-            req.session.authenticated = true;
-            req.session.user = an[0][0].username;
-            res.send({ message: req.session.user });
-            console.log("Admin Cookie set");
 
+        for(let i = 0; i < an[0].length; i++) {
+
+            isPassword = await bcrypt.compare(req.body.password, an[0][i].password);
+            isUser = req.body.name === an[0][i].username;
+
+            if(isUser && isPassword) {
+
+                req.session.authenticated = true;
+                req.session.user = an[0][i].username;
+                login = true;
+                break;
+                
+
+            }
+            else {
+
+                 login = false;
+                
+            }
         }
 
-        else if (isUser && isUserPassword) {
-            req.session.authenticated = true;
-            req.session.user = an[0][1].username;
+
+        if(login) {
             res.send({ message: req.session.user });
-            console.log("User Cookie set");
-
         }
-
-        else {
+        else if(login == false) {
             res.send({ message: "Wrong Username or Password" });
         }
+
+
+   
     }
     else {
         res.status(500).send("Fatal error :(");

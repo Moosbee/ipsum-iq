@@ -80,13 +80,9 @@ const ESP: React.FC<ESPProps> = ({light}) => {
 
     function setTime(ESP: string, statusled: boolean) {
         Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
-
             if(Response.data.futureTime) {
-
             }
         });
-
-    
     }
 
     function ClearTimer(ESP: string) {
