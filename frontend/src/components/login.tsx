@@ -11,7 +11,7 @@ function Login(props: any) {
   const [LoginStatus, setLoginStatus] = useState("");
   const [isvis, setvis] = useState<boolean | undefined>(false);
   const [msgShow, msgSet] = useState<boolean | undefined>(false);
-  let test: boolean;
+
   const navigate = useNavigate();
   
   const pasvis = () => { 
@@ -20,7 +20,12 @@ function Login(props: any) {
   };
 
 const msgSwitch = () => {
- msgSet(!msgShow)
+  msgSet(false)
+  setTimeout(()=> {
+    msgSet(true)
+    setLoginStatus("");
+
+  }, 3330)
 
 }
  
@@ -34,17 +39,22 @@ const msgSwitch = () => {
       if(Response.data.message) {
         msgSwitch();
         setLoginStatus(Response.data.message);
-        if(Response.data.message == "admin" || Response.data.message == "user") {
+        msgSwitch();
+
+        if(Response.data.LoggedIn) {
+
+
           navigate("/Mainpage");
-          let test = false;
+         
+        }
+        else {
+
         }
         
       }
       else {
+        
         setLoginStatus(Response.data[0].username);
-        let test = true;
-        
-        
         
       }
     });
@@ -141,7 +151,7 @@ const msgSwitch = () => {
             </div>
             <div className="flex justify-center">
               
-              <h1 className={msgShow?"wegmittext" : "wegmittext2"}>{LoginStatus}</h1>
+            <h1 hidden={msgShow}>{LoginStatus}</h1>
             
              
             </div>
