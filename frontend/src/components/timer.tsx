@@ -30,7 +30,7 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
 
 
   const now = new Date().getTime();
-
+// futurtime erhaltn vom server
   const distance = futureTime - now;
 
   console.log("DISTANCE " + distance);
@@ -44,7 +44,7 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
   const minutes = Math.floor((distance % (60 * 60 * 1000)) / (1000 * 60));
   const seconds = Math.floor((distance % (60 * 1000)) / 1000);
 
-  console.log("MORUK " + distance % (24 * 60 * 60 * 1000) / (1000 * 60 * 60) + " eeeee  " +  hours + "  hours  " + minutes + "  minutes  " + seconds + "  seconds");
+ 
  
     // Update Timer
   
@@ -64,6 +64,7 @@ const Timer: React.FC<TimerProps> = ({ futureTime }) => {
     }
 
     useEffect(() => {
+      //rendert die komponente neu => Timer neu berechnet
       const interval = setInterval(() => setTime(Date.now()), 1000);
       return () => {
         clearInterval(interval);

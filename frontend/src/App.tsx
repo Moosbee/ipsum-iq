@@ -1,14 +1,11 @@
 import React from "react";
 import "./App.css";
-import { HashRouter as Router, Route, Link, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import { Login } from "./components/login";
 import Mainpage from "./components/mainpage";
 import Layout from "./components/layout";
 import Entries from "./components/entries";
-import Querylist from "./components/querylist";
 import About from "./components/about";
-import Timer from "./components/timer";
-import ESP from "./components/esp";
 
 
 function App() {
