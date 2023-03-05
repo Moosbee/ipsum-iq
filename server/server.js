@@ -305,7 +305,7 @@ app.post('/login', async (req, res) => {
 
 
         if(login) {
-            res.send({ message: req.session.user });
+            res.send({ message: req.session.user, LoggedIn: true });
         }
         else if(login == false) {
             res.send({ message: "Wrong Username or Password" });
