@@ -23,7 +23,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     const [valreset, setvalreset] = useState(false);
     const [stopped, setstopper] = useState<boolean | undefined>(true);
 
-    const allowedNum = [48,49,50,51,52,53,54,54,56,57,37,39,8,46, 9 ]
+    const allowedNum = [48,49,50,51,52,53,54,54,56,57,96,97,98,99,100,101,102,103,104,105,37,39,8,46,9 ]
 
         const StopBut = () => {
         setstopper(!stopped);
@@ -123,6 +123,11 @@ const ESP: React.FC<ESPProps> = ({light}) => {
 
             evt.preventDefault()
            }
+           if(!TimeSubmittable === false && RunningTime() === true){
+            if (evt.key === "Enter") {
+                setTime(light.name, light.on)
+            }
+           }
           }}
           onChange={(event: any) => {(event.target.value = event.target.value.slice(0, 2));sethours(event.target.value);
           if (event.target.value.length >= 2){
@@ -139,8 +144,14 @@ const ESP: React.FC<ESPProps> = ({light}) => {
 
             evt.preventDefault()
            }
-         
-          }}
+           if(!TimeSubmittable === false && RunningTime() === true){
+            if (evt.key === "Enter") {
+                setTime(light.name, light.on)
+            }
+           }
+          }
+        
+       }
               onChange={(event:any) => {(event.target.value = event.target.value.slice(0, 2));setminutes(event.target.value);
                 if ((event.target as HTMLInputElement).value.length === 0){
                   (((event.target as HTMLElement).previousElementSibling as HTMLElement).previousElementSibling as HTMLElement)?.focus()
