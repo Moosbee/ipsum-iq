@@ -18,7 +18,7 @@ const Mainpage = () => {
  
 
   const ws = () => {
-    const socket = io("ws://localhost:3001");
+    const socket = io("ws://localhost:80");
 
     socket.on("ledstate", (data) => {
 
@@ -37,7 +37,7 @@ const Mainpage = () => {
 
   useEffect(() => {
 
-    Axios.get("http://localhost:3001/Mainpage").then((Response) => {
+    Axios.get("http://localhost:80/Mainpage").then((Response) => {
       if (Response.data.LoggedIn) {
         console.log("LOGGED IN");
         navigate("/Mainpage");
@@ -57,13 +57,9 @@ const Mainpage = () => {
 
  
 
- 
-
-
-
 
   function Logout() {
-    Axios.post("http://localhost:3001/logout").then((Response) => {
+    Axios.post("http://localhost:80/logout").then((Response) => {
 
       if (Response.data.LoggedOut == true) {
 
@@ -81,8 +77,8 @@ const Mainpage = () => {
           <a href="Mainpage" className="">
             <img
               src="LogoIpsum.png"
-              className="h-6 sm:h-9"
-              alt="Ipsum|IQ Logo"
+              className="h-6- sm:h-9"
+              alt="Ipsum|IQ -Logo"
             />
           </a>
           <button

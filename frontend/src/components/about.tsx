@@ -15,7 +15,7 @@ const About =() =>  {
       Axios.defaults.withCredentials = true;
 
       useEffect(() => {
-        Axios.get('http://localhost:3001/About').then((Response) => {
+        Axios.get('http://localhost:80/About').then((Response) => {
 
         if(Response.data.LoggedIn) {
           
@@ -34,7 +34,7 @@ const About =() =>  {
 
 
       function Logout() {
-        Axios.post("http://localhost:3001/logout").then((Response) => {
+        Axios.post("http://localhost:80/logout").then((Response) => {
     
           if(Response.data.LoggedOut == true) {
     

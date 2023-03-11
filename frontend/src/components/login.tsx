@@ -32,7 +32,7 @@ const msgSwitch = () => {
   Axios.defaults.withCredentials = true;
 
   function PostLogin() {
-    Axios.post('http://localhost:3001/login', {
+    Axios.post('http://localhost:80/login', {
       name: username,
       password: password
     }).then((Response) => { 
@@ -41,26 +41,17 @@ const msgSwitch = () => {
         msgSwitch();
 
         if(Response.data.LoggedIn) {
-
-
           navigate("/Mainpage");
-         
         }
-        else {
-
-        }
-        
       }
-      else {
-        
-        setLoginStatus(Response.data[0].username);
-        
+      else { 
+        setLoginStatus(Response.data[0].username);  
       }
     });
   }
   
   useEffect(()=> {
-    Axios.get('http://localhost:3001/login').then((Response) => {
+    Axios.get('http://localhost:80/login').then((Response) => {
 
     if(Response.data.LoggedIn) {
       console.log("LOGGED IN");

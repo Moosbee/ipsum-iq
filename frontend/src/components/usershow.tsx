@@ -10,7 +10,7 @@ const ShowUser = () => {
 
     useEffect(() => {
 
-        Axios.get("http://localhost:3001/Mainpage").then((Response) => {
+        Axios.get("http://localhost:80/Mainpage").then((Response) => {
 
             if(Response.data.LoggedIn) {
                 setUser(Response.data.User);

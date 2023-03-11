@@ -51,21 +51,9 @@ const ESP: React.FC<ESPProps> = ({light}) => {
         };
 
 
-    function InsertIntoDB(name: string) {
-        Axios.post("http://localhost:3001/entries", { ledname: name }).then((Response) => {
-
-            if (Response.data.LoggedIn) {
-
-            }
-            else if (!Response.data.LoggedIn) {
-                console.log("LOGGED out");
-                navigate("/");
-            }
-        });
-    }
 
     function SetLightStatus(name: string) {
-        Axios.post("http://localhost:3001/state", { ledname: name }).then((Response) => {
+        Axios.post("http://localhost:80/state", { ledname: name }).then((Response) => {
 
             if (Response.data.LoggedIn) {
 
@@ -79,14 +67,14 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     }
 
     function setTime(ESP: string, statusled: boolean) {
-        Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
+        Axios.post("http://localhost:80/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
             if(Response.data.futureTime) {
             }
         });
     }
 
     function ClearTimer(ESP: string) {
-        Axios.post("http://localhost:3001/timeclear", {ESPName: ESP}).then((Response) => {
+        Axios.post("http://localhost:80/timeclear", {ESPName: ESP}).then((Response) => {
 
         })
     }
@@ -96,7 +84,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
             <div className="bg-white rounded-lg shadow-xl min-h-[200px] sm:min-h-[250px]">
             <div className="flex justify-between h-full items-center">
               <div className="-mr-6 -ml-2">
-              <button type="button" onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name);
+              <button type="button" onClick={()=>{SetLightStatus(light.name); 
                     if(light.on === true){
 
                         ClearTimer(light.name)
@@ -185,7 +173,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
           
           <div className="grid col-1 gap-y-3 mr-4">
           <button
-            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name)}}
+            onClick={()=>{SetLightStatus(light.name);}}
             id="btn1"
             className={light.on? "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600  focus:ring-0 focus:outline-none cursor-not-allowed opacity-50 rounded-full"
             : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900  bg-purple-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-purple-400 rounded-full"}
@@ -194,7 +182,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
           </button>
 
            <button
-            onClick={()=>{SetLightStatus(light.name); InsertIntoDB(light.name); ClearTimer(light.name)}}
+            onClick={()=>{SetLightStatus(light.name); ClearTimer(light.name)}}
             id="btn2"
             className={light.on? "h-34 cursor-pointer py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300"
             : "h-34 py-2 px-3 overflow-hidden text-md font-medium text-gray-900 rounded-full  bg-blue-500 focus:outline-none cursor-not-allowed opacity-50"}
