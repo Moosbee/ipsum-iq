@@ -30,6 +30,14 @@ client.on("connect", function (connection) {
       thing.status = Math.pow(0, thing.status);
       connection.sendUTF(JSON.stringify(thing));
     }
+    if (message.utf8Data == "off") {
+      thing.status = 0;
+      connection.sendUTF(JSON.stringify(thing));
+    }
+    if (message.utf8Data == "on") {
+      thing.status = 1;
+      connection.sendUTF(JSON.stringify(thing));
+    }
   });
   readline.question(`Send something:`, (name) => {
     connection.sendUTF(name);
