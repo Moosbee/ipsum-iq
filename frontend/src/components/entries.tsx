@@ -19,7 +19,7 @@ const Entries = () => {
     
     useEffect(() => {
 
-        Axios.get('http://localhost:3001/entries').then((Response) => {
+        Axios.get('http://localhost:80/entries').then((Response) => {
 
 
             if (Response.data.isAdmin || Response.status != 200) {
@@ -38,7 +38,7 @@ const Entries = () => {
 
     
     function Logout() {
-      Axios.post("http://localhost:3001/logout").then((Response) => {
+      Axios.post("http://localhost:80/logout").then((Response) => {
   
         if(Response.data.LoggedOut == true) {
   
@@ -48,7 +48,7 @@ const Entries = () => {
       });
     }
     function ClearDB () {
-      Axios.post("http://localhost:3001/clear").then((Response) => {
+      Axios.post("http://localhost:80/clear").then((Response) => {
         if(Response.data.LoggedIn) {
 
           navigate("/mainpage");

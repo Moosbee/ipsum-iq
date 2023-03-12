@@ -153,8 +153,13 @@ app.get('/entries', async (req, res) => {
 
 });
 
-app.post('/entries', async (req, res) => {
+
+
+app.post('/state', async (req, res) => {
     if (req.session.user) {
+
+        
+    
         let date_ob = new Date();
         let day = ("0" + date_ob.getDate()).slice(-2);
         let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
@@ -170,36 +175,23 @@ app.post('/entries', async (req, res) => {
         let status;
 
         wss.clients.forEach(ws=> {
-            if (req.body.ledname == ws.id) {
+            if (licht == ws.id) {
+                
+
                 if (ws.status) {
-                    status = "an";
-                }
-                else if (ws.status == false) {
                     status = "aus";
                 }
-            }
-        })
+                else if (ws.status == false) {
+                    status = "an";
+                }
 
-        const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
-        (await connection).query(InsertQuery);
-        res.send({ LoggedIn: true });
-    }
-    else {
-        res.send({ LoggedIn: false });
-    }
-
-});
-
-
-app.post('/state', (req, res) => {
-    if (req.session.user) {
-        let name = req.body.ledname;
-
-        wss.clients.forEach(ws => {
-            if (name == ws.id) {
                 ws.send("toggle");
             }
         })
+
+     
+        const InsertQuery = `INSERT INTO eintraege (Datum, Zeitpunkt, user, licht, Status) VALUES ("${date}", "${time}", "${user}", "${licht}", "${status}")`;
+        (await connection).query(InsertQuery);
 
         res.send({ LoggedIn: true });
     }
@@ -245,9 +237,8 @@ app.get('/Mainpage', (req, res) => {
 });
 
 // Register Code
-app.post('/users', async (req, res) => {
+app.post('/register', async (req, res) => {
     try {
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
         const user = { name: req.body.name, password: hashedPassword };
@@ -262,26 +253,21 @@ app.post('/users', async (req, res) => {
                 return console.log(err);
             }
         });
-
     } catch {
         res.status(500).send("Error");
     }
-
-
 });
+
 
 //Login Code
 app.post('/login', async (req, res) => {
 
     let an = await (await connection).query("SELECT username, password FROM user");
-
-
     let isUser;
     let isPassword;
     let login;
 
     if (an) {
-
         for(let i = 0; i < an[0].length; i++) {
 
             isPassword = await bcrypt.compare(req.body.password, an[0][i].password);
@@ -293,16 +279,11 @@ app.post('/login', async (req, res) => {
                 req.session.user = an[0][i].username;
                 login = true;
                 break;
-                
-
             }
             else {
-
-                 login = false;
-                
+                 login = false;  
             }
         }
-
 
         if(login) {
             res.send({ message: req.session.user, LoggedIn: true });
@@ -311,14 +292,13 @@ app.post('/login', async (req, res) => {
             res.send({ message: "Wrong Username or Password" });
         }
 
-
-   
     }
     else {
         res.status(500).send("Fatal error :(");
     }
 
 });
+
 
 app.post('/logout', (req, res) => {
 
@@ -430,6 +410,6 @@ app.all('*', function (req, res, next) {
 
 
 
-server.listen(3001, () => {
-    console.log("Listening on Port 3001");
+server.listen(80, () => {
+    console.log("Listening on Port 80");
 });
