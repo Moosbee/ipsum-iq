@@ -32,7 +32,7 @@ const msgSwitch = () => {
   Axios.defaults.withCredentials = true;
 
   function PostLogin() {
-    Axios.post('http://localhost:80/login', {
+    Axios.post('http://localhost:3001/login', {
       name: username,
       password: password
     }).then((Response) => { 
@@ -52,7 +52,7 @@ const msgSwitch = () => {
   }
   
   useEffect(()=> {
-    Axios.get('http://localhost:80/login').then((Response) => {
+    Axios.get('http://localhost:3001/login').then((Response) => {
 
     if(Response.data.LoggedIn) {
       console.log("LOGGED IN");

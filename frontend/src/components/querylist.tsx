@@ -16,7 +16,7 @@ const Querylist = () => {
 
     useEffect(() => {
 
-        Axios.get('http://localhost:80/entries').then((Response) => {
+        Axios.get('http://localhost:3001/entries').then((Response) => {
 
             if (Response.data.result) {
                 setQuerys(Response.data.result);

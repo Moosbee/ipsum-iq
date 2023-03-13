@@ -53,7 +53,7 @@ const ESP: React.FC<ESPProps> = ({light}) => {
 
 
     function SetLightStatus(name: string) {
-        Axios.post("http://localhost:80/state", { ledname: name }).then((Response) => {
+        Axios.post("http://localhost:3001/state", { ledname: name }).then((Response) => {
 
             if (Response.data.LoggedIn) {
 
@@ -67,14 +67,14 @@ const ESP: React.FC<ESPProps> = ({light}) => {
     }
 
     function setTime(ESP: string, statusled: boolean) {
-        Axios.post("http://localhost:80/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
+        Axios.post("http://localhost:3001/time", { ledhours: hours, ledminutes: minutes, ESPName: ESP, status: statusled }).then((Response) => {
             if(Response.data.futureTime) {
             }
         });
     }
 
     function ClearTimer(ESP: string) {
-        Axios.post("http://localhost:80/timeclear", {ESPName: ESP}).then((Response) => {
+        Axios.post("http://localhost:3001/timeclear", {ESPName: ESP}).then((Response) => {
 
         })
     }
