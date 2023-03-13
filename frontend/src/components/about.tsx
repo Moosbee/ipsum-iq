@@ -113,7 +113,7 @@ const About =() =>  {
               <div className="grid">
               <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
               bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
-              focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={()=> {Logout();}}>
+              focus-visible:ring-4 focus:outline-none focus:ring-blue-300 " onClick={()=> {Logout();}}>
                
                 Log out
               
@@ -128,7 +128,7 @@ const About =() =>  {
       <div className=" mt-3 flex justify-center w-max-11/12 ">
    <div className="resize border-2 overflow-auto sm:w-6/12 w-11/12 bigH">
     
-<iframe title="Pflichtenheft" src="Plichtenheft.pdf" className="w-full h-full"></iframe> 
+<iframe title="Pflichtenheft" src="dokumentation_IpsumIq.pdf" className="w-full h-full"></iframe> 
 </div>
 </div>
       <div className="flex-grow">

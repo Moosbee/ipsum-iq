@@ -77,7 +77,7 @@ const Mainpage = () => {
           <a href="Mainpage" className="">
             <img
               src="LogoIpsum.png"
-              className="h-6- sm:h-9"
+              className="h-6 sm:h-9"
               alt="Ipsum|IQ -Logo"
             />
           </a>
@@ -139,7 +139,7 @@ const Mainpage = () => {
               <div className="grid">
                 <button className="h-34 cursor-pointer justify-self-center p-2 mt-2 sm:-mt-2 sm:w-full w-11/12 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group 
               bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white 
-              focus:ring-4 focus:outline-none focus:ring-blue-300 " onClick={() => { Logout(); }}>
+              focus-visible:ring-4 focus:outline-none focus:ring-blue-300 " onClick={() => { Logout(); }}>
 
                   Log out
 
