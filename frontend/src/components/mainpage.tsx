@@ -77,7 +77,7 @@ const Mainpage = () => {
           <a href="Mainpage" className="">
             <img
               src="LogoIpsum.png"
-              className="h-6- sm:h-9"
+              className="h-6 sm:h-9"
               alt="Ipsum|IQ -Logo"
             />
           </a>
