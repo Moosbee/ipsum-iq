@@ -385,24 +385,6 @@ IO.on('connection', (socket) => {
 });
 
 
-
-app.use('/', express.static('./frontendBuild/'));
-
-app.all('*', function (req, res, next) {
-    try {
-        res
-            .status(404)
-            .sendFile(
-                normalize('./frontendBuild/index.html')
-            );
-    } catch (error) {
-        console.log(error);
-    }
-    // next(); // pass control to the next handler
-});
-
-
-
 server.listen(3001, () => {
     console.log("Listening on Port 3001");
 });
