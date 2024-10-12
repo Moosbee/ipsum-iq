@@ -105,7 +105,7 @@ const msgSwitch = () => {
                   }
                 }
                  
-                  placeholder="Passwort"
+                  placeholder="Password"
                   required
                   
                 >

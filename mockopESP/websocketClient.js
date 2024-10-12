@@ -26,7 +26,6 @@ client.on("connect", function (connection) {
 
   connection.on("message", function (message) {
     if (message.utf8Data == "toggle") {
-      console.log("DEINE MUTTER GETOGGELT");
       thing.status = Math.pow(0, thing.status);
       connection.sendUTF(JSON.stringify(thing));
     }
@@ -45,4 +44,4 @@ client.on("connect", function (connection) {
   });
 });
 
-client.connect("ws://localhost:8080/Wohnzimmer");
+client.connect("ws://localhost:8080/Zimmer");
